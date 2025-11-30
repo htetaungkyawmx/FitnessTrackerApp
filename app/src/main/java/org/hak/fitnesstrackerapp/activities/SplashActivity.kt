@@ -32,6 +32,6 @@ class SplashActivity : AppCompatActivity() {
         }
 
         startActivity(intent)
-        finish() // Close splash activity properly
+        finish() // Close splash activity only
     }
 }

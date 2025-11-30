@@ -10,7 +10,6 @@ import org.hak.fitnesstrackerapp.R
 import org.hak.fitnesstrackerapp.database.AppDatabase
 import org.hak.fitnesstrackerapp.databinding.ActivityRegisterBinding
 import org.hak.fitnesstrackerapp.models.User
-import org.hak.fitnesstrackerapp.services.NetworkManager
 import org.hak.fitnesstrackerapp.utils.PreferenceHelper
 import org.hak.fitnesstrackerapp.utils.showToast
 import java.util.Random
@@ -20,7 +19,6 @@ class RegisterActivity : AppCompatActivity() {
     private lateinit var binding: ActivityRegisterBinding
     private lateinit var database: AppDatabase
     private lateinit var preferenceHelper: PreferenceHelper
-    private lateinit var networkManager: NetworkManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,7 +27,6 @@ class RegisterActivity : AppCompatActivity() {
 
         database = AppDatabase.getInstance(this)
         preferenceHelper = PreferenceHelper(this)
-        networkManager = NetworkManager()
 
         setupAnimations()
         setupClickListeners()
@@ -51,7 +48,6 @@ class RegisterActivity : AppCompatActivity() {
         binding.loginTextView.setOnClickListener {
             startActivity(Intent(this, LoginActivity::class.java))
             finish()
-            overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right)
         }
     }
 
@@ -130,31 +126,20 @@ class RegisterActivity : AppCompatActivity() {
                     return@launch
                 }
 
-                // Try network registration
-                val result = networkManager.register(username, email, password)
-                if (result.isSuccess) {
-                    val user = result.getOrNull()
-                    user?.let {
-                        database.userDao().insertUser(it)
-                        preferenceHelper.saveUserSession(it)
-                        showToast("Registration successful! Welcome, ${it.username}!")
-                        startActivity(Intent(this@RegisterActivity, MainActivity::class.java))
-                        finish()
-                    }
-                } else {
-                    // Fallback: Create user locally
-                    val newUser = User(
-                        id = Random().nextInt(100000),
-                        username = username,
-                        email = email,
-                        password = password
-                    )
-                    database.userDao().insertUser(newUser)
-                    preferenceHelper.saveUserSession(newUser)
-                    showToast("Registered locally successfully!")
-                    startActivity(Intent(this@RegisterActivity, MainActivity::class.java))
-                    finish()
-                }
+                // Create new user
+                val newUser = User(
+                    id = Random().nextInt(100000),
+                    username = username,
+                    email = email,
+                    password = password
+                )
+
+                database.userDao().insertUser(newUser)
+                preferenceHelper.saveUserSession(newUser)
+
+                showToast("Registration successful! Welcome, ${newUser.username}!")
+                navigateToMain()
+
             } catch (e: Exception) {
                 showToast("Registration failed: ${e.message}")
             } finally {
@@ -162,5 +147,11 @@ class RegisterActivity : AppCompatActivity() {
                 binding.registerButton.isEnabled = true
             }
         }
+    }
+
+    private fun navigateToMain() {
+        val intent = Intent(this, MainActivity::class.java)
+        startActivity(intent)
+        finish() // Close register activity only
     }
 }

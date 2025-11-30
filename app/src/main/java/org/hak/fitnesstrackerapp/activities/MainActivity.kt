@@ -24,6 +24,12 @@ class MainActivity : AppCompatActivity() {
 
         preferenceHelper = PreferenceHelper(this)
 
+        // Check if user is logged in
+        if (!preferenceHelper.isLoggedIn()) {
+            navigateToLogin()
+            return
+        }
+
         setupToolbar()
         setupNavigation()
         loadDashboardFragment()
@@ -91,26 +97,46 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun loadFragment(fragment: Fragment) {
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.fragment_container, fragment)
-            .commit()
+        try {
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.fragment_container, fragment)
+                .commit()
+        } catch (e: Exception) {
+            showToast("Error loading screen")
+            e.printStackTrace()
+        }
     }
 
     private fun syncData() {
         showToast("Syncing data...")
-        // Implement data synchronization with backend
     }
 
     private fun logout() {
         preferenceHelper.clearSession()
         showToast("Logged out successfully")
+        navigateToLogin()
+    }
+
+    private fun navigateToLogin() {
         val intent = Intent(this, LoginActivity::class.java)
-        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         startActivity(intent)
         finish()
     }
 
     private fun showToast(message: String) {
         android.widget.Toast.makeText(this, message, android.widget.Toast.LENGTH_SHORT).show()
+    }
+
+    override fun onBackPressed() {
+        super.onBackPressed()
+        // Don't exit app on back press, just go to dashboard
+        if (binding.bottomNavigation.selectedItemId != R.id.navigation_dashboard) {
+            // If not on dashboard, go to dashboard
+            binding.bottomNavigation.selectedItemId = R.id.navigation_dashboard
+        } else {
+            // If already on dashboard, minimize app instead of closing
+            moveTaskToBack(true)
+        }
+        // DON'T call super.onBackPressed() - that would finish the activity
     }
 }

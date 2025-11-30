@@ -10,7 +10,6 @@ import org.hak.fitnesstrackerapp.R
 import org.hak.fitnesstrackerapp.database.AppDatabase
 import org.hak.fitnesstrackerapp.databinding.ActivityLoginBinding
 import org.hak.fitnesstrackerapp.models.User
-import org.hak.fitnesstrackerapp.services.NetworkManager
 import org.hak.fitnesstrackerapp.utils.PreferenceHelper
 import org.hak.fitnesstrackerapp.utils.showToast
 import java.util.Random
@@ -20,7 +19,6 @@ class LoginActivity : AppCompatActivity() {
     private lateinit var binding: ActivityLoginBinding
     private lateinit var database: AppDatabase
     private lateinit var preferenceHelper: PreferenceHelper
-    private lateinit var networkManager: NetworkManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,10 +27,14 @@ class LoginActivity : AppCompatActivity() {
 
         database = AppDatabase.getInstance(this)
         preferenceHelper = PreferenceHelper(this)
-        networkManager = NetworkManager()
 
         setupAnimations()
         setupClickListeners()
+
+        // Check if user is already logged in
+        if (preferenceHelper.isLoggedIn() && preferenceHelper.isSessionValid()) {
+            navigateToMain()
+        }
     }
 
     private fun setupAnimations() {
@@ -50,7 +52,7 @@ class LoginActivity : AppCompatActivity() {
 
         binding.registerTextView.setOnClickListener {
             startActivity(Intent(this, RegisterActivity::class.java))
-            finish()
+            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
         }
 
         binding.forgotPasswordTextView.setOnClickListener {
@@ -68,24 +70,26 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun validateInput(username: String, password: String): Boolean {
+        var isValid = true
+
         if (username.isEmpty()) {
             binding.usernameTextInputLayout.error = "Username is required"
-            return false
+            isValid = false
         } else {
             binding.usernameTextInputLayout.error = null
         }
 
         if (password.isEmpty()) {
             binding.passwordTextInputLayout.error = "Password is required"
-            return false
+            isValid = false
         } else if (password.length < 6) {
             binding.passwordTextInputLayout.error = "Password must be at least 6 characters"
-            return false
+            isValid = false
         } else {
             binding.passwordTextInputLayout.error = null
         }
 
-        return true
+        return isValid
     }
 
     private fun performLogin(username: String, password: String) {
@@ -111,11 +115,7 @@ class LoginActivity : AppCompatActivity() {
                 if (user != null) {
                     preferenceHelper.saveUserSession(user)
                     showToast("Welcome back, ${user.username}!")
-
-                    val intent = Intent(this@LoginActivity, MainActivity::class.java)
-                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                    startActivity(intent)
-                    finish()
+                    navigateToMain()
                 } else {
                     showToast("Invalid credentials")
                 }
@@ -126,5 +126,11 @@ class LoginActivity : AppCompatActivity() {
                 binding.loginButton.isEnabled = true
             }
         }
+    }
+
+    private fun navigateToMain() {
+        val intent = Intent(this, MainActivity::class.java)
+        startActivity(intent)
+        finish() // Close login activity only
     }
 }
