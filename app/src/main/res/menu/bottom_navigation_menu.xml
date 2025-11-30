@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/navigation_dashboard"
+        android:icon="@drawable/ic_dashboard"
+        android:title="@string/quick_stats" />
+    <item
+        android:id="@+id/navigation_workout"
+        android:icon="@drawable/ic_workout"
+        android:title="@string/start_workout" />
+    <item
+        android:id="@+id/navigation_goals"
+        android:icon="@drawable/ic_goals"
+        android:title="@string/your_goals" />
+    <item
+        android:id="@+id/navigation_history"
+        android:icon="@drawable/ic_history"
+        android:title="@string/workout_history" />
+</menu>
