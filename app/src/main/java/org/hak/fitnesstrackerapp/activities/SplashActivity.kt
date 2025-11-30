@@ -19,13 +19,14 @@ class SplashActivity : AppCompatActivity() {
 
         preferenceHelper = PreferenceHelper(this)
 
+        // Delay for 2 seconds then check login status
         Handler(Looper.getMainLooper()).postDelayed({
             checkLoginStatus()
         }, 2000)
     }
 
     private fun checkLoginStatus() {
-        if (preferenceHelper.isLoggedIn()) {
+        if (preferenceHelper.isLoggedIn() && preferenceHelper.isSessionValid()) {
             startActivity(Intent(this, MainActivity::class.java))
         } else {
             startActivity(Intent(this, LoginActivity::class.java))

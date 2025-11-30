@@ -2,20 +2,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- Permissions -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.WAKE_LOCK" />
-    <uses-permission android:name="android.permission.VIBRATE" />
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
         android:name=".FitnessTrackerApp"
         android:allowBackup="true"
-        android:dataExtractionRules="@xml/data_extraction_rules"
-        android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
@@ -23,7 +16,7 @@
         android:theme="@style/Theme.FitnessTrackerApp"
         tools:targetApi="31">
 
-        <!-- Activities -->
+        <!-- Splash Activity -->
         <activity
             android:name=".ui.activities.SplashActivity"
             android:exported="true"
@@ -34,39 +27,35 @@
             </intent-filter>
         </activity>
 
+        <!-- Login Activity -->
         <activity
             android:name=".ui.activities.LoginActivity"
             android:exported="false"
             android:theme="@style/Theme.FitnessTrackerApp" />
 
+        <!-- Register Activity -->
         <activity
             android:name=".ui.activities.RegisterActivity"
             android:exported="false"
             android:theme="@style/Theme.FitnessTrackerApp" />
 
+        <!-- Main Activity -->
         <activity
             android:name=".ui.activities.MainActivity"
             android:exported="false"
             android:theme="@style/Theme.FitnessTrackerApp" />
 
+        <!-- Profile Activity -->
         <activity
             android:name=".ui.activities.ProfileActivity"
             android:exported="false"
             android:theme="@style/Theme.FitnessTrackerApp" />
 
+        <!-- Workout Detail Activity -->
         <activity
             android:name=".ui.activities.WorkoutDetailActivity"
             android:exported="false"
             android:theme="@style/Theme.FitnessTrackerApp" />
-
-        <!-- Services -->
-        <service
-            android:name=".services.LocationService"
-            android:exported="false" />
-
-        <service
-            android:name=".services.NotificationService"
-            android:exported="false" />
 
     </application>
 </manifest>
