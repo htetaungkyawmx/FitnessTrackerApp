@@ -8,6 +8,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.hak.fitnesstrackerapp.R
@@ -16,9 +17,10 @@ import org.hak.fitnesstrackerapp.databinding.FragmentGoalsBinding
 import org.hak.fitnesstrackerapp.models.Goal
 import org.hak.fitnesstrackerapp.models.GoalType
 import org.hak.fitnesstrackerapp.ui.adapters.GoalsAdapter
+import org.hak.fitnesstrackerapp.utils.DateUtils
 import org.hak.fitnesstrackerapp.utils.PreferenceHelper
 import org.hak.fitnesstrackerapp.utils.showToast
-import java.util.*
+import java.util.Calendar
 
 class GoalsFragment : Fragment() {
 
@@ -96,7 +98,7 @@ class GoalsFragment : Fragment() {
 
         // Setup goal type dropdown
         val goalTypes = GoalType.values().map { it.name }
-        val adapter = androidx.appcompat.widget.ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, goalTypes)
+        val adapter = android.widget.ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, goalTypes)
         goalType.setAdapter(adapter)
 
         goalType.setOnItemClickListener { parent, view, position, id ->
@@ -159,7 +161,7 @@ class GoalsFragment : Fragment() {
                         "Target: ${goal.targetValue} ${goal.unit}\n" +
                         "Progress: ${goal.currentValue} ${goal.unit}\n" +
                         "Completion: ${String.format("%.1f", goal.getProgressPercentage())}%\n" +
-                        "Deadline: ${org.hak.fitnesstrackerapp.utils.formatDate(goal.deadline)}"
+                        "Deadline: ${DateUtils.formatDate(goal.deadline.time)}"
             )
             .setPositiveButton("Update Progress") { dialog, which ->
                 showUpdateProgressDialog(goal)
@@ -193,8 +195,14 @@ class GoalsFragment : Fragment() {
         }
     }
 
+    private fun CoroutineScope.showToast(message: String) {
+        TODO("Not yet implemented")
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
     }
 }
+
+private fun GoalsFragment.showToast(message: String) {}

@@ -1,6 +1,10 @@
 package org.hak.fitnesstrackerapp.database
 
-import androidx.room.*
+import androidx.room.Dao
+import androidx.room.Delete
+import androidx.room.Insert
+import androidx.room.Query
+import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 import org.hak.fitnesstrackerapp.models.Workout
 
@@ -38,4 +42,17 @@ interface WorkoutDao {
 
     @Query("DELETE FROM workouts")
     suspend fun clearAll()
+
+    // Additional methods for statistics
+    @Query("SELECT AVG(calories) FROM workouts WHERE userId = :userId")
+    suspend fun getAverageCalories(userId: Int): Double
+
+    @Query("SELECT AVG(duration) FROM workouts WHERE userId = :userId")
+    suspend fun getAverageDuration(userId: Int): Double
+
+    @Query("SELECT COUNT(*) FROM workouts WHERE userId = :userId AND date >= :startDate AND date <= :endDate")
+    suspend fun getWorkoutsInDateRange(userId: Int, startDate: java.util.Date, endDate: java.util.Date): Int
+
+    @Query("SELECT * FROM workouts WHERE userId = :userId AND date >= :startDate AND date <= :endDate ORDER BY date DESC")
+    fun getWorkoutsByDateRange(userId: Int, startDate: java.util.Date, endDate: java.util.Date): Flow<List<Workout>>
 }

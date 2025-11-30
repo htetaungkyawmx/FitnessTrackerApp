@@ -1,4 +1,4 @@
-package org.hak.fitnesstrackerapp.ui.activities
+package org.hak.fitnesstrackerapp.activities
 
 import android.content.Intent
 import android.os.Bundle
@@ -10,6 +10,8 @@ import org.hak.fitnesstrackerapp.R
 import org.hak.fitnesstrackerapp.database.AppDatabase
 import org.hak.fitnesstrackerapp.databinding.ActivityLoginBinding
 import org.hak.fitnesstrackerapp.services.NetworkManager
+import org.hak.fitnesstrackerapp.ui.activities.MainActivity
+import org.hak.fitnesstrackerapp.ui.activities.RegisterActivity
 import org.hak.fitnesstrackerapp.utils.PreferenceHelper
 import org.hak.fitnesstrackerapp.utils.showToast
 

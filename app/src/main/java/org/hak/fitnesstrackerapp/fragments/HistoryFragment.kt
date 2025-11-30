@@ -1,5 +1,6 @@
 package org.hak.fitnesstrackerapp.ui.fragments
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -8,9 +9,12 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import org.hak.fitnesstrackerapp.R
+import org.hak.fitnesstrackerapp.activities.WorkoutDetailActivity
 import org.hak.fitnesstrackerapp.database.AppDatabase
 import org.hak.fitnesstrackerapp.databinding.FragmentHistoryBinding
+import org.hak.fitnesstrackerapp.models.Workout
 import org.hak.fitnesstrackerapp.ui.adapters.WorkoutAdapter
 import org.hak.fitnesstrackerapp.utils.PreferenceHelper
 
@@ -90,17 +94,17 @@ class HistoryFragment : Fragment() {
                         }
                     }
                     R.id.filter_running -> {
-                        database.workoutDao().getWorkoutsByType(userId, "RUNNING").collectLatest { workouts ->
+                        database.workoutDao().getWorkoutsByType(userId, "running").collectLatest { workouts ->
                             workoutAdapter.submitList(workouts)
                         }
                     }
                     R.id.filter_cycling -> {
-                        database.workoutDao().getWorkoutsByType(userId, "CYCLING").collectLatest { workouts ->
+                        database.workoutDao().getWorkoutsByType(userId, "cycling").collectLatest { workouts ->
                             workoutAdapter.submitList(workouts)
                         }
                     }
                     R.id.filter_weightlifting -> {
-                        database.workoutDao().getWorkoutsByType(userId, "WEIGHTLIFTING").collectLatest { workouts ->
+                        database.workoutDao().getWorkoutsByType(userId, "weightlifting").collectLatest { workouts ->
                             workoutAdapter.submitList(workouts)
                         }
                     }
@@ -109,8 +113,8 @@ class HistoryFragment : Fragment() {
         }
     }
 
-    private fun showWorkoutDetails(workout: org.hak.fitnesstrackerapp.models.Workout) {
-        val intent = android.content.Intent(requireContext(), org.hak.fitnesstrackerapp.ui.activities.WorkoutDetailActivity::class.java)
+    private fun showWorkoutDetails(workout: Workout) {
+        val intent = Intent(requireContext(), WorkoutDetailActivity::class.java)
         intent.putExtra("workout", workout)
         startActivity(intent)
     }

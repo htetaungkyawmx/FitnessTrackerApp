@@ -1,216 +1,72 @@
 package org.hak.fitnesstrackerapp.models
 
-import android.os.Parcelable
-import androidx.room.TypeConverters
-import com.google.gson.annotations.SerializedName
-import kotlinx.parcelize.Parcelize
-import org.hak.fitnesstrackerapp.database.Converters
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 
-@Parcelize
-@TypeConverters(Converters::class)
+@Entity(tableName = "exercises")
 data class Exercise(
-    @SerializedName("id")
+    @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
-
-    @SerializedName("name")
     val name: String,
-
-    @SerializedName("sets")
-    val sets: Int,
-
-    @SerializedName("reps")
-    val reps: Int,
-
-    @SerializedName("weight")
-    val weight: Double, // in kg
-
-    @SerializedName("rest_time")
-    val restTime: Int = 60, // in seconds
-
-    @SerializedName("completed_sets")
+    val category: String,
+    val sets: Int = 3,
+    val reps: Int = 10,
+    val weight: Double = 0.0,
     val completedSets: Int = 0,
-
-    @SerializedName("notes")
-    val notes: String = "",
-
-    @SerializedName("category")
-    val category: ExerciseCategory = ExerciseCategory.STRENGTH,
-
-    @SerializedName("created_at")
-    val createdAt: java.util.Date = java.util.Date(),
-
-    @SerializedName("updated_at")
-    val updatedAt: java.util.Date = java.util.Date()
-) : Parcelable {
-
-    fun getTotalVolume(): Double {
-        return sets * reps * weight
+    val notes: String = ""
+) {
+    fun getFormattedDetails(): String {
+        return "$sets x $reps ${if (weight > 0) "@ ${weight}kg" else ""}"
     }
 
     fun getProgressPercentage(): Double {
         return if (sets > 0) (completedSets.toDouble() / sets) * 100 else 0.0
     }
 
-    fun isCompleted(): Boolean {
-        return completedSets >= sets
-    }
-
-    fun getFormattedDetails(): String {
-        return "$sets x $reps @ ${weight}kg"
+    fun getTotalVolume(): Double {
+        return sets * reps * weight
     }
 
     fun getOneRepMax(): Double {
-        // Calculate estimated one-rep max using Epley formula
-        return weight * (1 + (reps / 30.0))
+        // Simple 1RM calculation using Epley formula
+        return weight * (1 + reps / 30.0)
     }
 
-    companion object {
-        fun createDefaultExercises(): List<Exercise> {
-            return listOf(
-                Exercise(
-                    name = "Bench Press",
-                    sets = 3,
-                    reps = 10,
-                    weight = 60.0,
-                    category = ExerciseCategory.CHEST
-                ),
-                Exercise(
-                    name = "Squats",
-                    sets = 4,
-                    reps = 8,
-                    weight = 80.0,
-                    category = ExerciseCategory.LEGS
-                ),
-                Exercise(
-                    name = "Deadlift",
-                    sets = 3,
-                    reps = 6,
-                    weight = 100.0,
-                    category = ExerciseCategory.BACK
-                ),
-                Exercise(
-                    name = "Shoulder Press",
-                    sets = 3,
-                    reps = 12,
-                    weight = 30.0,
-                    category = ExerciseCategory.SHOULDERS
-                ),
-                Exercise(
-                    name = "Bicep Curls",
-                    sets = 3,
-                    reps = 15,
-                    weight = 15.0,
-                    category = ExerciseCategory.ARMS
-                )
-            )
-        }
+    fun isCompleted(): Boolean {
+        return completedSets >= sets
     }
 }
 
-enum class ExerciseCategory {
-    @SerializedName("CHEST")
-    CHEST,
-
-    @SerializedName("BACK")
-    BACK,
-
-    @SerializedName("LEGS")
-    LEGS,
-
-    @SerializedName("SHOULDERS")
-    SHOULDERS,
-
-    @SerializedName("ARMS")
-    ARMS,
-
-    @SerializedName("CORE")
-    CORE,
-
-    @SerializedName("CARDIO")
-    CARDIO,
-
-    @SerializedName("STRENGTH")
-    STRENGTH,
-
-    @SerializedName("FLEXIBILITY")
-    FLEXIBILITY,
-
-    @SerializedName("OTHER")
-    OTHER;
-
-    fun getDisplayName(): String {
-        return when (this) {
-            CHEST -> "Chest"
-            BACK -> "Back"
-            LEGS -> "Legs"
-            SHOULDERS -> "Shoulders"
-            ARMS -> "Arms"
-            CORE -> "Core"
-            CARDIO -> "Cardio"
-            STRENGTH -> "Strength"
-            FLEXIBILITY -> "Flexibility"
-            OTHER -> "Other"
-        }
-    }
-
-    fun getIconRes(): Int {
-        return when (this) {
-            CHEST -> org.hak.fitnesstrackerapp.R.drawable.ic_chest
-            BACK -> org.hak.fitnesstrackerapp.R.drawable.ic_back
-            LEGS -> org.hak.fitnesstrackerapp.R.drawable.ic_legs
-            SHOULDERS -> org.hak.fitnesstrackerapp.R.drawable.ic_shoulders
-            ARMS -> org.hak.fitnesstrackerapp.R.drawable.ic_arms
-            CORE -> org.hak.fitnesstrackerapp.R.drawable.ic_core
-            CARDIO -> org.hak.fitnesstrackerapp.R.drawable.ic_cardio
-            STRENGTH -> org.hak.fitnesstrackerapp.R.drawable.ic_strength
-            FLEXIBILITY -> org.hak.fitnesstrackerapp.R.drawable.ic_flexibility
-            OTHER -> org.hak.fitnesstrackerapp.R.drawable.ic_exercise
-        }
-    }
+// Exercise category constants
+object ExerciseCategory {
+    const val CHEST = "Chest"
+    const val BACK = "Back"
+    const val LEGS = "Legs"
+    const val SHOULDERS = "Shoulders"
+    const val ARMS = "Arms"
+    const val CORE = "Core"
+    const val CARDIO = "Cardio"
+    const val STRENGTH = "Strength"
+    const val FLEXIBILITY = "Flexibility"
+    const val OTHER = "Other"
 }
 
-data class ExerciseSet(
-    @SerializedName("set_number")
-    val setNumber: Int,
-
-    @SerializedName("reps_completed")
-    val repsCompleted: Int,
-
-    @SerializedName("weight_used")
-    val weightUsed: Double,
-
-    @SerializedName("is_completed")
-    val isCompleted: Boolean = false,
-
-    @SerializedName("rest_timer")
-    val restTimer: Int = 0
-) {
-    fun getSetSummary(): String {
-        return "Set $setNumber: $repsCompleted reps @ ${weightUsed}kg"
-    }
+// Extension functions for Exercise category
+fun String.getDisplayName(): String {
+    return this
 }
 
-data class ExerciseSession(
-    @SerializedName("exercise_id")
-    val exerciseId: Int,
-
-    @SerializedName("sets_completed")
-    val setsCompleted: List<ExerciseSet>,
-
-    @SerializedName("start_time")
-    val startTime: java.util.Date,
-
-    @SerializedName("end_time")
-    val endTime: java.util.Date? = null,
-
-    @SerializedName("total_volume")
-    val totalVolume: Double = 0.0
-) {
-    fun getSessionDuration(): Long {
-        return endTime?.time?.minus(startTime.time) ?: 0
-    }
-
-    fun calculateTotalVolume(): Double {
-        return setsCompleted.sumOf { it.repsCompleted * it.weightUsed }
+fun String.getIconRes(): Int {
+    return when (this.lowercase()) {
+        "chest" -> org.hak.fitnesstrackerapp.R.drawable.ic_chest
+        "back" -> org.hak.fitnesstrackerapp.R.drawable.ic_back
+        "legs" -> org.hak.fitnesstrackerapp.R.drawable.ic_legs
+        "shoulders" -> org.hak.fitnesstrackerapp.R.drawable.ic_shoulders
+        "arms" -> org.hak.fitnesstrackerapp.R.drawable.ic_arms
+        "core" -> org.hak.fitnesstrackerapp.R.drawable.ic_core
+        "cardio" -> org.hak.fitnesstrackerapp.R.drawable.ic_cardio
+        "strength" -> org.hak.fitnesstrackerapp.R.drawable.ic_strength
+        "flexibility" -> org.hak.fitnesstrackerapp.R.drawable.ic_flexibility
+        else -> org.hak.fitnesstrackerapp.R.drawable.ic_placeholder
     }
 }

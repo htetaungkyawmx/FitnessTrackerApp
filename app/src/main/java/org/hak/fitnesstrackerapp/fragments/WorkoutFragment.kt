@@ -58,7 +58,7 @@ class WorkoutFragment : Fragment() {
         database = org.hak.fitnesstrackerapp.FitnessTrackerApp.instance.database
         preferenceHelper = PreferenceHelper(requireContext())
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
-        locationService = LocationService(requireContext())
+        locationService = LocationService()
 
         setupWorkoutTypeSelector()
         setupClickListeners()
@@ -202,11 +202,11 @@ class WorkoutFragment : Fragment() {
                 Manifest.permission.ACCESS_FINE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED
         ) {
-            requestLocationPermissions()
+            requestLocationPermission()
             return
         }
 
-        locationService.startLocationUpdates { location ->
+        locationService.startLocationUpdates(requireContext()) { location ->
             currentLocation = location
             updateLocationInfo(location)
         }
@@ -214,6 +214,13 @@ class WorkoutFragment : Fragment() {
 
     private fun updateLocationInfo(location: Location) {
         binding.speedText.text = String.format("%.1f km/h", location.speed * 3.6)
+    }
+
+    private fun requestLocationPermission() {
+        requestPermissions(
+            arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+            LOCATION_PERMISSION_REQUEST
+        )
     }
 
     private fun showAddExerciseDialog() {
@@ -233,7 +240,12 @@ class WorkoutFragment : Fragment() {
                 val weight = weightEditText.text.toString().toDoubleOrNull() ?: 0.0
 
                 if (name.isNotEmpty() && sets > 0 && reps > 0) {
-                    val exercise = Exercise(name, sets, reps, weight)
+                    val exercise = Exercise(
+                        name = name,
+                        sets = sets,
+                        reps = reps,
+                        weight = weight
+                    )
                     exercises.add(exercise)
                     updateExercisesList()
                     showToast("Exercise added!")
@@ -280,10 +292,11 @@ class WorkoutFragment : Fragment() {
 
         return Workout(
             userId = userId,
-            type = WorkoutType.RUNNING,
+            name = "Running Workout",
+            type = "RUNNING",
             duration = duration,
-            calories = calories,
-            date = Date(),
+            calories = calories.toInt(),
+            date = System.currentTimeMillis(),
             distance = distance,
             averageSpeed = averageSpeed,
             notes = binding.notesEditText.text.toString()
@@ -296,13 +309,13 @@ class WorkoutFragment : Fragment() {
 
         return Workout(
             userId = userId,
-            type = WorkoutType.CYCLING,
+            name = "Cycling Workout",
+            type = "CYCLING",
             duration = duration,
-            calories = calories,
-            date = Date(),
+            calories = calories.toInt(),
+            date = System.currentTimeMillis(),
             distance = distance,
             averageSpeed = averageSpeed,
-            elevation = null, // Could be calculated from location data
             notes = binding.notesEditText.text.toString()
         )
     }
@@ -310,11 +323,11 @@ class WorkoutFragment : Fragment() {
     private fun createWeightliftingWorkout(userId: Int, duration: Int, calories: Double): Workout {
         return Workout(
             userId = userId,
-            type = WorkoutType.WEIGHTLIFTING,
+            name = "Weightlifting Workout",
+            type = "WEIGHTLIFTING",
             duration = duration,
-            calories = calories,
-            date = Date(),
-            exercises = exercises.toList(),
+            calories = calories.toInt(),
+            date = System.currentTimeMillis(),
             notes = binding.notesEditText.text.toString()
         )
     }
@@ -322,9 +335,9 @@ class WorkoutFragment : Fragment() {
     private fun showWorkoutSavedDialog(workout: Workout) {
         MaterialAlertDialogBuilder(requireContext())
             .setTitle("Workout Saved!")
-            .setMessage("${workout.type.name} workout completed!\n\n" +
+            .setMessage("${workout.type} workout completed!\n\n" +
                     "Duration: ${workout.duration} minutes\n" +
-                    "Calories: ${String.format("%.0f", workout.calories)} cal\n" +
+                    "Calories: ${workout.calories} cal\n" +
                     "${workout.getWorkoutSummary()}")
             .setPositiveButton("Great!") { dialog, which -> }
             .show()

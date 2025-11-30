@@ -4,7 +4,6 @@ import android.app.AlertDialog
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import org.hak.fitnesstrackerapp.database.AppDatabase
 import org.hak.fitnesstrackerapp.databinding.ActivityProfileBinding
@@ -44,15 +43,12 @@ class ProfileActivity : AppCompatActivity() {
         lifecycleScope.launch {
             val user = preferenceHelper.getUser()
             user?.let {
-                binding.usernameEditText.setText(it.username)
-                binding.emailEditText.setText(it.email)
+                // Update header only since username and email fields are read-only
+                binding.usernameTextView.text = it.username
+                binding.emailTextView.text = it.email
                 binding.heightEditText.setText(it.height?.toString() ?: "")
                 binding.weightEditText.setText(it.weight?.toString() ?: "")
                 binding.ageEditText.setText(it.age?.toString() ?: "")
-
-                // Update header
-                binding.usernameTextView.text = it.username
-                binding.emailTextView.text = it.email
             }
         }
     }
@@ -70,9 +66,8 @@ class ProfileActivity : AppCompatActivity() {
             showWeightDialog()
         }
 
-        binding.statsCard.setOnClickListener {
-            showDetailedStatistics()
-        }
+        // Remove statsCard reference if it doesn't exist
+        // binding.statsCard.setOnClickListener { }
     }
 
     private fun updateProfile() {
@@ -190,24 +185,6 @@ class ProfileActivity : AppCompatActivity() {
                 .setMessage(message)
                 .setPositiveButton("Awesome!") { dialog, which -> }
                 .show()
-        }
-    }
-
-    private fun calculateBMI(weight: Double?, height: Double?): Double? {
-        return if (weight != null && height != null && height > 0) {
-            val heightInMeters = height / 100
-            weight / (heightInMeters * heightInMeters)
-        } else {
-            null
-        }
-    }
-
-    private fun getBMICategory(bmi: Double): String {
-        return when {
-            bmi < 18.5 -> "Underweight"
-            bmi < 25 -> "Normal weight"
-            bmi < 30 -> "Overweight"
-            else -> "Obese"
         }
     }
 }

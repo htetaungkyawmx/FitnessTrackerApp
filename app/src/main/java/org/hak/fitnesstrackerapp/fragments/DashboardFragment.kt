@@ -1,5 +1,6 @@
-package org.hak.fitnesstrackerapp.ui.fragments
+package org.hak.fitnesstrackerapp.fragments
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -14,12 +15,14 @@ import com.github.mikephil.charting.data.LineDataSet
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.hak.fitnesstrackerapp.R
+import org.hak.fitnesstrackerapp.activities.WorkoutDetailActivity
 import org.hak.fitnesstrackerapp.database.AppDatabase
 import org.hak.fitnesstrackerapp.databinding.FragmentDashboardBinding
+import org.hak.fitnesstrackerapp.models.Workout
+import org.hak.fitnesstrackerapp.models.getIconRes
+import org.hak.fitnesstrackerapp.utils.DateUtils
 import org.hak.fitnesstrackerapp.utils.PreferenceHelper
-import org.hak.fitnesstrackerapp.utils.formatDate
 import org.hak.fitnesstrackerapp.utils.showToast
-import java.util.*
 
 class DashboardFragment : Fragment() {
 
@@ -100,7 +103,7 @@ class DashboardFragment : Fragment() {
         }
     }
 
-    private fun setupRecentWorkouts(workouts: List<org.hak.fitnesstrackerapp.models.Workout>) {
+    private fun setupRecentWorkouts(workouts: List<Workout>) {
         binding.recentWorkoutsLayout.visibility = View.VISIBLE
         binding.emptyStateLayout.visibility = View.GONE
 
@@ -109,8 +112,8 @@ class DashboardFragment : Fragment() {
                 0 -> {
                     binding.workout1Type.setImageResource(workout.getIconRes())
                     binding.workout1Title.text = workout.type.name
-                    binding.workout1Subtitle.text = workout.getWorkoutSummary()
-                    binding.workout1Date.text = formatDate(workout.date)
+                    binding.workout1Subtitle.text = "${workout.duration} min • ${workout.calories.toInt()} cal"
+                    binding.workout1Date.text = DateUtils.formatDate(workout.date.time)
                     binding.workout1Card.setOnClickListener {
                         showWorkoutDetails(workout)
                     }
@@ -118,8 +121,8 @@ class DashboardFragment : Fragment() {
                 1 -> {
                     binding.workout2Type.setImageResource(workout.getIconRes())
                     binding.workout2Title.text = workout.type.name
-                    binding.workout2Subtitle.text = workout.getWorkoutSummary()
-                    binding.workout2Date.text = formatDate(workout.date)
+                    binding.workout2Subtitle.text = "${workout.duration} min • ${workout.calories.toInt()} cal"
+                    binding.workout2Date.text = DateUtils.formatDate(workout.date.time)
                     binding.workout2Card.setOnClickListener {
                         showWorkoutDetails(workout)
                     }
@@ -127,8 +130,8 @@ class DashboardFragment : Fragment() {
                 2 -> {
                     binding.workout3Type.setImageResource(workout.getIconRes())
                     binding.workout3Title.text = workout.type.name
-                    binding.workout3Subtitle.text = workout.getWorkoutSummary()
-                    binding.workout3Date.text = formatDate(workout.date)
+                    binding.workout3Subtitle.text = "${workout.duration} min • ${workout.calories.toInt()} cal"
+                    binding.workout3Date.text = DateUtils.formatDate(workout.date.time)
                     binding.workout3Card.setOnClickListener {
                         showWorkoutDetails(workout)
                     }
@@ -137,7 +140,9 @@ class DashboardFragment : Fragment() {
         }
     }
 
-    private fun setupChartData(workouts: List<org.hak.fitnesstrackerapp.models.Workout>) {
+    private fun setupChartData(workouts: List<Workout>) {
+        if (workouts.isEmpty()) return
+
         val entries = ArrayList<Entry>()
         workouts.reversed().forEachIndexed { index, workout ->
             entries.add(Entry(index.toFloat(), workout.calories.toFloat()))
@@ -159,20 +164,24 @@ class DashboardFragment : Fragment() {
         binding.startWorkoutCard.setOnClickListener {
             showToast("Navigate to Workout")
             // Navigate to workout fragment
+            requireActivity().findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(R.id.bottom_navigation)?.selectedItemId = R.id.navigation_workout
         }
 
         binding.viewAllWorkouts.setOnClickListener {
             showToast("View all workouts")
             // Navigate to history
+            requireActivity().findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(R.id.bottom_navigation)?.selectedItemId = R.id.navigation_history
         }
 
-        binding.statsCard.setOnClickListener {
-            showToast("View detailed statistics")
+        binding.viewGoalsCard.setOnClickListener {
+            showToast("View goals")
+            // Navigate to goals
+            requireActivity().findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(R.id.bottom_navigation)?.selectedItemId = R.id.navigation_goals
         }
     }
 
-    private fun showWorkoutDetails(workout: org.hak.fitnesstrackerapp.models.Workout) {
-        val intent = android.content.Intent(requireContext(), org.hak.fitnesstrackerapp.ui.activities.WorkoutDetailActivity::class.java)
+    private fun showWorkoutDetails(workout: Workout) {
+        val intent = Intent(requireContext(), WorkoutDetailActivity::class.java)
         intent.putExtra("workout", workout)
         startActivity(intent)
     }

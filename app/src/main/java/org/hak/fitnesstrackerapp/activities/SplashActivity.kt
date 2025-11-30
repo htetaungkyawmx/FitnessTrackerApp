@@ -6,6 +6,7 @@ import android.os.Handler
 import android.os.Looper
 import androidx.appcompat.app.AppCompatActivity
 import org.hak.fitnesstrackerapp.R
+import org.hak.fitnesstrackerapp.activities.LoginActivity
 import org.hak.fitnesstrackerapp.utils.PreferenceHelper
 
 class SplashActivity : AppCompatActivity() {

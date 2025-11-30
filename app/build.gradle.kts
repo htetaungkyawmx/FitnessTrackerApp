@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.kapt)
+    id("org.jetbrains.kotlin.plugin.parcelize")
 }
 
 android {
@@ -43,19 +44,10 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.4"
-    }
-
-    // Add packaging options to exclude files that cause conflicts
-    packaging {
-        resources {
-            excludes += "/META-INF/{AL2.0,LGPL2.1}"
-            excludes += "/META-INF/gradle/incremental.annotation.processors"
-        }
+        kotlinCompilerExtensionVersion = "1.5.11" // Correct Compose Compiler version for Kotlin 1.9.22
     }
 }
 
-// Configure KAPT
 kapt {
     useBuildCache = true
     correctErrorTypes = true
@@ -97,8 +89,8 @@ dependencies {
     // Google Location Services
     implementation(libs.play.services.location)
 
-    // Charts
-    implementation(libs.mpandroidchart)
+    // Charts - MPAndroidChart (added directly)
+    implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
 
     // Coroutines
     implementation(libs.kotlinx.coroutines.android)

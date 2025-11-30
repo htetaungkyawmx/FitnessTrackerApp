@@ -14,7 +14,7 @@ import com.google.android.material.card.MaterialCardView
 import com.google.android.material.chip.Chip
 import org.hak.fitnesstrackerapp.R
 import org.hak.fitnesstrackerapp.models.Exercise
-import org.hak.fitnesstrackerapp.models.ExerciseCategory
+import org.hak.fitnesstrackerapp.models.getIconRes
 
 class ExerciseAdapter(
     private val onExerciseClick: (Exercise) -> Unit = {},
@@ -31,9 +31,9 @@ class ExerciseAdapter(
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ExerciseViewHolder {
-        val binding = LayoutInflater.from(parent.context)
+        val view = LayoutInflater.from(parent.context)
             .inflate(R.layout.item_exercise, parent, false)
-        return ExerciseViewHolder(binding)
+        return ExerciseViewHolder(view)
     }
 
     override fun onBindViewHolder(holder: ExerciseViewHolder, position: Int) {
@@ -53,7 +53,7 @@ class ExerciseAdapter(
         private val volumeText: TextView = itemView.findViewById(R.id.volumeText)
         private val oneRepMaxText: TextView = itemView.findViewById(R.id.oneRepMaxText)
         private val completedBadge: View = itemView.findViewById(R.id.completedBadge)
-        private val setsContainer: View = itemView.findViewById(R.id.setsContainer)
+        private val setsContainer: ViewGroup? = itemView.findViewById(R.id.setsContainer)
         private val editIcon: ImageView = itemView.findViewById(R.id.editIcon)
 
         init {
@@ -83,7 +83,7 @@ class ExerciseAdapter(
             // Set basic exercise information
             exerciseName.text = exercise.name
             exerciseDetails.text = exercise.getFormattedDetails()
-            exerciseCategory.text = exercise.category.getDisplayName()
+            exerciseCategory.text = exercise.category
 
             // Set category chip color
             exerciseCategory.setChipBackgroundColorResource(
@@ -141,12 +141,12 @@ class ExerciseAdapter(
                 setsContainer.visibility = View.VISIBLE
 
                 // Clear existing set views
-                (setsContainer as? ViewGroup)?.removeAllViews()
+                setsContainer.removeAllViews()
 
                 // Create set buttons
                 for (setNumber in 1..exercise.sets) {
                     val setView = createSetView(setNumber, exercise, setNumber <= exercise.completedSets)
-                    (setsContainer as? ViewGroup)?.addView(setView)
+                    setsContainer.addView(setView)
                 }
             } else {
                 setsContainer?.visibility = View.GONE
@@ -191,18 +191,18 @@ class ExerciseAdapter(
             return setView
         }
 
-        private fun getCategoryColor(category: ExerciseCategory): Int {
-            return when (category) {
-                ExerciseCategory.CHEST -> R.color.category_chest
-                ExerciseCategory.BACK -> R.color.category_back
-                ExerciseCategory.LEGS -> R.color.category_legs
-                ExerciseCategory.SHOULDERS -> R.color.category_shoulders
-                ExerciseCategory.ARMS -> R.color.category_arms
-                ExerciseCategory.CORE -> R.color.category_core
-                ExerciseCategory.CARDIO -> R.color.category_cardio
-                ExerciseCategory.STRENGTH -> R.color.category_strength
-                ExerciseCategory.FLEXIBILITY -> R.color.category_flexibility
-                ExerciseCategory.OTHER -> R.color.category_other
+        private fun getCategoryColor(category: String): Int {
+            return when (category.lowercase()) {
+                "chest" -> R.color.category_chest
+                "back" -> R.color.category_back
+                "legs" -> R.color.category_legs
+                "shoulders" -> R.color.category_shoulders
+                "arms" -> R.color.category_arms
+                "core" -> R.color.category_core
+                "cardio" -> R.color.category_cardio
+                "strength" -> R.color.category_strength
+                "flexibility" -> R.color.category_flexibility
+                else -> R.color.category_other
             }
         }
     }

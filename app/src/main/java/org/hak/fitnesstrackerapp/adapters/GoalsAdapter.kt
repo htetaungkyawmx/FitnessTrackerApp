@@ -1,4 +1,4 @@
-package org.hak.fitnesstrackerapp.ui.adapters
+package org.hak.fitnesstrackerapp.adapters
 
 import android.view.LayoutInflater
 import android.view.View
@@ -10,7 +10,7 @@ import androidx.recyclerview.widget.RecyclerView
 import org.hak.fitnesstrackerapp.R
 import org.hak.fitnesstrackerapp.databinding.ItemGoalBinding
 import org.hak.fitnesstrackerapp.models.Goal
-import org.hak.fitnesstrackerapp.utils.formatDate
+import org.hak.fitnesstrackerapp.utils.DateUtils
 
 class GoalsAdapter(
     private val onItemClick: (Goal) -> Unit
@@ -43,7 +43,7 @@ class GoalsAdapter(
             binding.goalTitleText.text = goal.title
             binding.goalDescriptionText.text = goal.description
             binding.goalProgressText.text = "${goal.currentValue} / ${goal.targetValue} ${goal.unit}"
-            binding.goalDeadlineText.text = "Deadline: ${formatDate(goal.deadline)}"
+            binding.goalDeadlineText.text = "Deadline: ${DateUtils.formatDate(goal.deadline)}"
 
             // Setup progress bar
             val progress = goal.getProgressPercentage().toInt()
