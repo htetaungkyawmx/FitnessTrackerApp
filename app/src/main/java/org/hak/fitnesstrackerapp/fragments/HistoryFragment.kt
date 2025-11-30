@@ -94,17 +94,17 @@ class HistoryFragment : Fragment() {
                         }
                     }
                     R.id.filter_running -> {
-                        database.workoutDao().getWorkoutsByType(userId, "running").collectLatest { workouts ->
+                        database.workoutDao().getWorkoutsByType(userId, "RUNNING").collectLatest { workouts ->
                             workoutAdapter.submitList(workouts)
                         }
                     }
                     R.id.filter_cycling -> {
-                        database.workoutDao().getWorkoutsByType(userId, "cycling").collectLatest { workouts ->
+                        database.workoutDao().getWorkoutsByType(userId, "CYCLING").collectLatest { workouts ->
                             workoutAdapter.submitList(workouts)
                         }
                     }
                     R.id.filter_weightlifting -> {
-                        database.workoutDao().getWorkoutsByType(userId, "weightlifting").collectLatest { workouts ->
+                        database.workoutDao().getWorkoutsByType(userId, "WEIGHTLIFTING").collectLatest { workouts ->
                             workoutAdapter.submitList(workouts)
                         }
                     }
@@ -115,7 +115,7 @@ class HistoryFragment : Fragment() {
 
     private fun showWorkoutDetails(workout: Workout) {
         val intent = Intent(requireContext(), WorkoutDetailActivity::class.java)
-        intent.putExtra("workout", workout)
+        intent.putExtra("workout", workout as java.io.Serializable)
         startActivity(intent)
     }
 

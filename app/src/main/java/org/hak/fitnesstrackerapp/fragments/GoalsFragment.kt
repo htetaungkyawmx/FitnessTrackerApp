@@ -1,4 +1,4 @@
-package org.hak.fitnesstrackerapp.ui.fragments
+package org.hak.fitnesstrackerapp.fragments
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -8,15 +8,14 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.hak.fitnesstrackerapp.R
+import org.hak.fitnesstrackerapp.adapters.GoalsAdapter
 import org.hak.fitnesstrackerapp.database.AppDatabase
 import org.hak.fitnesstrackerapp.databinding.FragmentGoalsBinding
 import org.hak.fitnesstrackerapp.models.Goal
 import org.hak.fitnesstrackerapp.models.GoalType
-import org.hak.fitnesstrackerapp.ui.adapters.GoalsAdapter
 import org.hak.fitnesstrackerapp.utils.DateUtils
 import org.hak.fitnesstrackerapp.utils.PreferenceHelper
 import org.hak.fitnesstrackerapp.utils.showToast
@@ -125,7 +124,7 @@ class GoalsFragment : Fragment() {
                 if (title.isNotEmpty() && target > 0 && unitText.isNotEmpty()) {
                     createGoal(title, description, target, selectedType, unitText)
                 } else {
-                    showToast("Please fill all fields correctly")
+                    requireContext().showToast("Please fill all fields correctly")
                 }
             }
             .setNegativeButton("Cancel", null)
@@ -144,12 +143,12 @@ class GoalsFragment : Fragment() {
                 description = description,
                 targetValue = targetValue,
                 unit = unit,
-                deadline = calendar.time,
+                deadline = calendar.time.time, // Convert Date to Long
                 type = type
             )
 
             database.goalDao().insertGoal(goal)
-            showToast("Goal created successfully!")
+            requireContext().showToast("Goal created successfully!")
         }
     }
 
@@ -161,7 +160,7 @@ class GoalsFragment : Fragment() {
                         "Target: ${goal.targetValue} ${goal.unit}\n" +
                         "Progress: ${goal.currentValue} ${goal.unit}\n" +
                         "Completion: ${String.format("%.1f", goal.getProgressPercentage())}%\n" +
-                        "Deadline: ${DateUtils.formatDate(goal.deadline.time)}"
+                        "Deadline: ${DateUtils.formatDate(goal.deadline)}"
             )
             .setPositiveButton("Update Progress") { dialog, which ->
                 showUpdateProgressDialog(goal)
@@ -191,12 +190,8 @@ class GoalsFragment : Fragment() {
         lifecycleScope.launch {
             val updatedGoal = goal.copy(currentValue = newProgress)
             database.goalDao().updateGoal(updatedGoal)
-            showToast("Progress updated!")
+            requireContext().showToast("Progress updated!")
         }
-    }
-
-    private fun CoroutineScope.showToast(message: String) {
-        TODO("Not yet implemented")
     }
 
     override fun onDestroyView() {
@@ -204,5 +199,3 @@ class GoalsFragment : Fragment() {
         _binding = null
     }
 }
-
-private fun GoalsFragment.showToast(message: String) {}

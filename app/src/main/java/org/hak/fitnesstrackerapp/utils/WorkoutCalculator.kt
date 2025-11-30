@@ -60,15 +60,15 @@ object WorkoutCalculator {
     }
 
     fun calculatePace(duration: Int, distance: Double): Double {
-        return if (distance > 0) duration / distance else 0.0
+        return if (distance > 0) duration.toDouble() / distance else 0.0
     }
 
     fun calculateAverageSpeed(distance: Double, duration: Int): Double {
-        return if (duration > 0) (distance / duration) * 60 else 0.0
+        return if (duration > 0) (distance / duration.toDouble()) * 60 else 0.0
     }
 
     fun calculateWorkoutIntensity(workout: Workout): String {
-        val caloriesPerMinute = workout.calories / workout.duration
+        val caloriesPerMinute = workout.calories.toDouble() / workout.duration
         return when {
             caloriesPerMinute > 12 -> "Very High"
             caloriesPerMinute > 8 -> "High"
@@ -79,19 +79,19 @@ object WorkoutCalculator {
     }
 
     fun calculateWeeklyProgress(workouts: List<Workout>): Map<String, Double> {
-        val currentWeekCalories = workouts.sumOf { it.calories }
-        val currentWeekDuration = workouts.sumOf { it.duration }
-        val currentWeekWorkouts = workouts.size
+        val currentWeekCalories = workouts.sumOf { it.calories.toDouble() } // Convert to Double
+        val currentWeekDuration = workouts.sumOf { it.duration.toDouble() } // Convert to Double
+        val currentWeekWorkouts = workouts.size.toDouble() // Convert to Double
 
         // For demo purposes, using previous week as 80% of current
         val previousWeekCalories = currentWeekCalories * 0.8
         val previousWeekDuration = currentWeekDuration * 0.8
-        val previousWeekWorkouts = (currentWeekWorkouts * 0.8).toInt()
+        val previousWeekWorkouts = currentWeekWorkouts * 0.8
 
         return mapOf(
             "calories_progress" to calculateProgressPercentage(currentWeekCalories, previousWeekCalories),
-            "duration_progress" to calculateProgressPercentage(currentWeekDuration.toDouble(), previousWeekDuration.toDouble()),
-            "workouts_progress" to calculateProgressPercentage(currentWeekWorkouts.toDouble(), previousWeekWorkouts.toDouble())
+            "duration_progress" to calculateProgressPercentage(currentWeekDuration, previousWeekDuration),
+            "workouts_progress" to calculateProgressPercentage(currentWeekWorkouts, previousWeekWorkouts)
         )
     }
 
@@ -118,9 +118,9 @@ object WorkoutCalculator {
     fun calculateFitnessScore(workouts: List<Workout>): Double {
         if (workouts.isEmpty()) return 0.0
 
-        val totalCalories = workouts.sumOf { it.calories }
-        val totalDuration = workouts.sumOf { it.duration }
-        val workoutFrequency = workouts.size
+        val totalCalories = workouts.sumOf { it.calories.toDouble() } // Convert to Double
+        val totalDuration = workouts.sumOf { it.duration.toDouble() } // Convert to Double
+        val workoutFrequency = workouts.size.toDouble() // Convert to Double
         val averageIntensity = workouts.sumOf {
             when (calculateWorkoutIntensity(it)) {
                 "Very High" -> 5.0

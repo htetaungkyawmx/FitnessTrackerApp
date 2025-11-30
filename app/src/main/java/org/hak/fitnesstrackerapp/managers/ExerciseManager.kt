@@ -97,7 +97,7 @@ object ExerciseManager {
     }
 
     fun calculateTrainingVolume(exercises: List<Exercise>): Double {
-        return exercises.sumOf { it.getTotalVolume() }
+        return exercises.sumOf { it.sets * it.reps * it.weight }
     }
 
     fun getRecommendedWeight(exercise: Exercise, experienceLevel: String): Double {

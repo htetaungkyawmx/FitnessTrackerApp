@@ -11,6 +11,7 @@ import org.hak.fitnesstrackerapp.R
 import org.hak.fitnesstrackerapp.databinding.ItemGoalBinding
 import org.hak.fitnesstrackerapp.models.Goal
 import org.hak.fitnesstrackerapp.utils.DateUtils
+import java.util.Date
 
 class GoalsAdapter(
     private val onItemClick: (Goal) -> Unit
@@ -43,7 +44,7 @@ class GoalsAdapter(
             binding.goalTitleText.text = goal.title
             binding.goalDescriptionText.text = goal.description
             binding.goalProgressText.text = "${goal.currentValue} / ${goal.targetValue} ${goal.unit}"
-            binding.goalDeadlineText.text = "Deadline: ${DateUtils.formatDate(goal.deadline)}"
+            binding.goalDeadlineText.text = "Deadline: ${DateUtils.formatDate(Date(goal.deadline))}"
 
             // Setup progress bar
             val progress = goal.getProgressPercentage().toInt()

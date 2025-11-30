@@ -8,7 +8,7 @@ import org.hak.fitnesstrackerapp.R
 import org.hak.fitnesstrackerapp.activities.LoginActivity
 import org.hak.fitnesstrackerapp.databinding.ActivityMainBinding
 import org.hak.fitnesstrackerapp.fragments.DashboardFragment
-import org.hak.fitnesstrackerapp.ui.fragments.GoalsFragment
+import org.hak.fitnesstrackerapp.fragments.GoalsFragment
 import org.hak.fitnesstrackerapp.ui.fragments.HistoryFragment
 import org.hak.fitnesstrackerapp.ui.fragments.WorkoutFragment
 import org.hak.fitnesstrackerapp.utils.PreferenceHelper

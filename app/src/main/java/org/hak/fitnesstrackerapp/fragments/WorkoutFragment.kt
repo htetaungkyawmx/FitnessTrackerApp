@@ -9,12 +9,15 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.textfield.TextInputEditText
 import kotlinx.coroutines.launch
+import org.hak.fitnesstrackerapp.FitnessTrackerApp
 import org.hak.fitnesstrackerapp.R
 import org.hak.fitnesstrackerapp.database.AppDatabase
 import org.hak.fitnesstrackerapp.databinding.FragmentWorkoutBinding
@@ -24,7 +27,7 @@ import org.hak.fitnesstrackerapp.models.WorkoutType
 import org.hak.fitnesstrackerapp.services.LocationService
 import org.hak.fitnesstrackerapp.utils.PreferenceHelper
 import org.hak.fitnesstrackerapp.utils.showToast
-import java.util.*
+import java.util.Date
 
 class WorkoutFragment : Fragment() {
 
@@ -55,7 +58,7 @@ class WorkoutFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        database = org.hak.fitnesstrackerapp.FitnessTrackerApp.instance.database
+        database = FitnessTrackerApp.instance.database
         preferenceHelper = PreferenceHelper(requireContext())
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
         locationService = LocationService()
@@ -123,7 +126,7 @@ class WorkoutFragment : Fragment() {
         elapsedSeconds = 0
 
         binding.startStopButton.text = "STOP"
-        binding.startStopButton.setBackgroundColor(resources.getColor(R.color.error, null))
+        binding.startStopButton.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.error))
         binding.pauseResumeButton.visibility = View.VISIBLE
         binding.setupLayout.visibility = View.GONE
         binding.trackingLayout.visibility = View.VISIBLE
@@ -142,7 +145,7 @@ class WorkoutFragment : Fragment() {
         workoutTimer?.cancel()
 
         binding.startStopButton.text = "START WORKOUT"
-        binding.startStopButton.setBackgroundColor(resources.getColor(R.color.primary, null))
+        binding.startStopButton.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.primary))
         binding.pauseResumeButton.visibility = View.GONE
         binding.trackingLayout.visibility = View.GONE
         binding.setupLayout.visibility = View.VISIBLE
@@ -225,10 +228,10 @@ class WorkoutFragment : Fragment() {
 
     private fun showAddExerciseDialog() {
         val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_add_exercise, null)
-        val exerciseName = dialogView.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.exerciseNameEditText)
-        val setsEditText = dialogView.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.setsEditText)
-        val repsEditText = dialogView.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.repsEditText)
-        val weightEditText = dialogView.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.weightEditText)
+        val exerciseName = dialogView.findViewById<TextInputEditText>(R.id.exerciseNameEditText)
+        val setsEditText = dialogView.findViewById<TextInputEditText>(R.id.setsEditText)
+        val repsEditText = dialogView.findViewById<TextInputEditText>(R.id.repsEditText)
+        val weightEditText = dialogView.findViewById<TextInputEditText>(R.id.weightEditText)
 
         MaterialAlertDialogBuilder(requireContext())
             .setTitle("Add Exercise")
@@ -244,7 +247,11 @@ class WorkoutFragment : Fragment() {
                         name = name,
                         sets = sets,
                         reps = reps,
-                        weight = weight
+                        weight = weight,
+                        id = TODO(),
+                        category = TODO(),
+                        completedSets = TODO(),
+                        notes = TODO()
                     )
                     exercises.add(exercise)
                     updateExercisesList()
@@ -292,11 +299,10 @@ class WorkoutFragment : Fragment() {
 
         return Workout(
             userId = userId,
-            name = "Running Workout",
-            type = "RUNNING",
+            type = WorkoutType.RUNNING,
             duration = duration,
             calories = calories.toInt(),
-            date = System.currentTimeMillis(),
+            date = Date(System.currentTimeMillis()),
             distance = distance,
             averageSpeed = averageSpeed,
             notes = binding.notesEditText.text.toString()
@@ -309,11 +315,10 @@ class WorkoutFragment : Fragment() {
 
         return Workout(
             userId = userId,
-            name = "Cycling Workout",
-            type = "CYCLING",
+            type = WorkoutType.CYCLING,
             duration = duration,
             calories = calories.toInt(),
-            date = System.currentTimeMillis(),
+            date = Date(System.currentTimeMillis()),
             distance = distance,
             averageSpeed = averageSpeed,
             notes = binding.notesEditText.text.toString()
@@ -323,11 +328,10 @@ class WorkoutFragment : Fragment() {
     private fun createWeightliftingWorkout(userId: Int, duration: Int, calories: Double): Workout {
         return Workout(
             userId = userId,
-            name = "Weightlifting Workout",
-            type = "WEIGHTLIFTING",
+            type = WorkoutType.WEIGHTLIFTING,
             duration = duration,
             calories = calories.toInt(),
-            date = System.currentTimeMillis(),
+            date = Date(System.currentTimeMillis()),
             notes = binding.notesEditText.text.toString()
         )
     }
@@ -337,8 +341,7 @@ class WorkoutFragment : Fragment() {
             .setTitle("Workout Saved!")
             .setMessage("${workout.type} workout completed!\n\n" +
                     "Duration: ${workout.duration} minutes\n" +
-                    "Calories: ${workout.calories} cal\n" +
-                    "${workout.getWorkoutSummary()}")
+                    "Calories: ${workout.calories} cal")
             .setPositiveButton("Great!") { dialog, which -> }
             .show()
     }

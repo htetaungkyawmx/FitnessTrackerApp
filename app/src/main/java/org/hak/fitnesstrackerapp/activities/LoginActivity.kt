@@ -122,4 +122,6 @@ class LoginActivity : AppCompatActivity() {
             }
         }
     }
+
+    private fun Unit.login(username: String, password: String) {}
 }

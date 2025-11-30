@@ -2,33 +2,66 @@ package org.hak.fitnesstrackerapp.models
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import androidx.room.TypeConverters
-import org.hak.fitnesstrackerapp.database.Converters
+import androidx.room.TypeConverter
+import java.io.Serializable
 import java.util.Date
 
 @Entity(tableName = "workouts")
-@TypeConverters(Converters::class)
 data class Workout(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
-
     val userId: Int,
-
     val type: WorkoutType,
-
-    val duration: Int, // in minutes
-
-    val calories: Double,
-
+    val duration: Int,
+    val calories: Int,
     val date: Date,
+    val distance: Double? = null,
+    val averageSpeed: Double? = null,
+    val notes: String? = null
+) : Serializable
 
-    val notes: String = "",
+enum class WorkoutType {
+    RUNNING, CYCLING, WEIGHTLIFTING;
 
-    val distance: Double? = null, // for running/cycling
+    override fun toString(): String {
+        return when (this) {
+            RUNNING -> "RUNNING"
+            CYCLING -> "CYCLING"
+            WEIGHTLIFTING -> "WEIGHTLIFTING"
+        }
+    }
 
-    val averageSpeed: Double? = null, // for running/cycling
+    companion object {
+        fun fromString(value: String): WorkoutType {
+            return when (value.uppercase()) {
+                "RUNNING" -> RUNNING
+                "CYCLING" -> CYCLING
+                "WEIGHTLIFTING" -> WEIGHTLIFTING
+                else -> RUNNING // default
+            }
+        }
+    }
+}
 
-    val elevation: Double? = null, // for cycling
+// Converters for Room
+class Converters {
+    @TypeConverter
+    fun fromWorkoutType(type: WorkoutType): String {
+        return type.toString()
+    }
 
-    val exercises: List<Exercise> = emptyList() // for weightlifting
-)
+    @TypeConverter
+    fun toWorkoutType(value: String): WorkoutType {
+        return WorkoutType.fromString(value)
+    }
+
+    @TypeConverter
+    fun fromDate(date: Date): Long {
+        return date.time
+    }
+
+    @TypeConverter
+    fun toDate(timestamp: Long): Date {
+        return Date(timestamp)
+    }
+}

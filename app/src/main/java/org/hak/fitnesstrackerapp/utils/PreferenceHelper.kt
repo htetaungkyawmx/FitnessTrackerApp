@@ -3,7 +3,6 @@ package org.hak.fitnesstrackerapp.utils
 import android.content.Context
 import android.content.SharedPreferences
 import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import org.hak.fitnesstrackerapp.models.User
 import java.util.*
 
@@ -14,7 +13,7 @@ class PreferenceHelper(context: Context) {
     private val gson = Gson()
 
     // User Session Management
-    fun saveUserSession(user: User) {
+    fun saveUserSession(user: Unit) {
         val editor = sharedPreferences.edit()
         editor.putInt("user_id", user.id)
         editor.putString("username", user.username)

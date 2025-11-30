@@ -182,7 +182,7 @@ class DashboardFragment : Fragment() {
 
     private fun showWorkoutDetails(workout: Workout) {
         val intent = Intent(requireContext(), WorkoutDetailActivity::class.java)
-        intent.putExtra("workout", workout)
+        intent.putExtra("workout", 100)
         startActivity(intent)
     }
 

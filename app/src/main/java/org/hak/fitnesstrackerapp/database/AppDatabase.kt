@@ -1,38 +1,35 @@
 package org.hak.fitnesstrackerapp.database
 
-import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
-import org.hak.fitnesstrackerapp.models.Goal
-import org.hak.fitnesstrackerapp.models.User
+import org.hak.fitnesstrackerapp.FitnessTrackerApp
+import org.hak.fitnesstrackerapp.activities.LoginActivity
+import org.hak.fitnesstrackerapp.models.Converters
 import org.hak.fitnesstrackerapp.models.Workout
 
 @Database(
-    entities = [User::class, Workout::class, Goal::class],
+    entities = [Workout::class],
     version = 1,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
-    abstract fun userDao(): UserDao
     abstract fun workoutDao(): WorkoutDao
-    abstract fun goalDao(): GoalDao
+    abstract fun userDao()
 
     companion object {
         @Volatile
         private var INSTANCE: AppDatabase? = null
 
-        fun getInstance(context: Context): AppDatabase {
+        fun getInstance(activity: LoginActivity): AppDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
-                    context.applicationContext,
+                    FitnessTrackerApp.instance,
                     AppDatabase::class.java,
-                    "fitness_tracker.db"
-                )
-                    .fallbackToDestructiveMigration()
-                    .build()
+                    "fitness_tracker_database"
+                ).build()
                 INSTANCE = instance
                 instance
             }

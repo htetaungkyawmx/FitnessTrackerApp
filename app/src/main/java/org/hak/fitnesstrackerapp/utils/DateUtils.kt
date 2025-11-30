@@ -6,24 +6,22 @@ import java.util.Locale
 
 object DateUtils {
 
-    fun Long.formatDate(): String {
-        val date = Date(this)
-        val format = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
-        return format.format(date)
+    private val dateFormat = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
+    private val dateTimeFormat = SimpleDateFormat("MMM dd, yyyy 'at' HH:mm", Locale.getDefault())
+
+    fun formatDate(date: Date): String {
+        return dateFormat.format(date)
     }
 
-    fun formatDate(date: Long): String {
-        val format = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
-        return format.format(date)
+    fun formatDateTime(date: Date): String {
+        return dateTimeFormat.format(date)
     }
 
-    fun formatTime(date: Date): String {
-        val format = SimpleDateFormat("HH:mm", Locale.getDefault())
-        return format.format(date)
+    fun formatDate(timestamp: Long): String {
+        return dateFormat.format(Date(timestamp))
     }
 
-    fun getCurrentDateTime(): String {
-        val format = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
-        return format.format(Date())
+    fun formatDateTime(timestamp: Long): String {
+        return dateTimeFormat.format(Date(timestamp))
     }
 }

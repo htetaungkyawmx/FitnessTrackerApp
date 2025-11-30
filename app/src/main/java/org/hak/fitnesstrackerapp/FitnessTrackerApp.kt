@@ -5,12 +5,12 @@ import org.hak.fitnesstrackerapp.database.AppDatabase
 
 class FitnessTrackerApp : Application() {
 
+    val database: AppDatabase by lazy { AppDatabase.getInstance(this) }
+
     companion object {
         lateinit var instance: FitnessTrackerApp
             private set
     }
-
-    val database: AppDatabase by lazy { AppDatabase.getInstance(this) }
 
     override fun onCreate() {
         super.onCreate()
