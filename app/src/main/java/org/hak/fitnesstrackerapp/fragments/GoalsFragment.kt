@@ -26,19 +26,34 @@ class GoalsFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         setupClickListeners()
+        setupFilterChips()
+    }
+
+    private fun setupFilterChips() {
+        binding.filterAll?.setOnClickListener {
+            showToast("Showing all goals")
+        }
+
+        binding.filterActive?.setOnClickListener {
+            showToast("Showing active goals")
+        }
+
+        binding.filterCompleted?.setOnClickListener {
+            showToast("Showing completed goals")
+        }
     }
 
     private fun setupClickListeners() {
-        binding.addGoalButton.setOnClickListener {
-            showToast("Add Goal Clicked")
+        binding.addGoalButton?.setOnClickListener {
+            showToast("Add goal dialog would open here")
         }
 
-        binding.fabAddGoal.setOnClickListener {
-            showToast("Add Goal FAB Clicked")
+        binding.fabAddGoal?.setOnClickListener {
+            showToast("Add goal FAB clicked")
         }
 
-        binding.createFirstGoalButton.setOnClickListener {
-            showToast("Create First Goal Clicked")
+        binding.createFirstGoalButton?.setOnClickListener {
+            showToast("Create your first goal!")
         }
     }
 

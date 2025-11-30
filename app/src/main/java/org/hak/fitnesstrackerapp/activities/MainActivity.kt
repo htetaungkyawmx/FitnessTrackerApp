@@ -2,6 +2,7 @@ package org.hak.fitnesstrackerapp.ui.activities
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import org.hak.fitnesstrackerapp.R
@@ -12,7 +13,7 @@ import org.hak.fitnesstrackerapp.ui.fragments.HistoryFragment
 import org.hak.fitnesstrackerapp.ui.fragments.WorkoutFragment
 import org.hak.fitnesstrackerapp.utils.PreferenceHelper
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), DashboardFragment.DashboardListener {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var preferenceHelper: PreferenceHelper
@@ -33,6 +34,8 @@ class MainActivity : AppCompatActivity() {
         setupToolbar()
         setupNavigation()
         loadDashboardFragment()
+
+        showToast("MainActivity loaded successfully! 🎉")
     }
 
     private fun setupToolbar() {
@@ -66,22 +69,22 @@ class MainActivity : AppCompatActivity() {
         binding.bottomNavigation.setOnItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.navigation_dashboard -> {
-                    loadFragment(DashboardFragment())
+                    loadFragment(DashboardFragment(), "Dashboard")
                     binding.toolbar.title = "Dashboard"
                     true
                 }
                 R.id.navigation_workout -> {
-                    loadFragment(WorkoutFragment())
+                    loadFragment(WorkoutFragment(), "Workout")
                     binding.toolbar.title = "Workout"
                     true
                 }
                 R.id.navigation_goals -> {
-                    loadFragment(GoalsFragment())
+                    loadFragment(GoalsFragment(), "Goals")
                     binding.toolbar.title = "Goals"
                     true
                 }
                 R.id.navigation_history -> {
-                    loadFragment(HistoryFragment())
+                    loadFragment(HistoryFragment(), "History")
                     binding.toolbar.title = "History"
                     true
                 }
@@ -91,20 +94,41 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun loadDashboardFragment() {
-        loadFragment(DashboardFragment())
+        loadFragment(DashboardFragment(), "Dashboard")
         binding.bottomNavigation.selectedItemId = R.id.navigation_dashboard
         binding.toolbar.title = "Dashboard"
     }
 
-    private fun loadFragment(fragment: Fragment) {
+    private fun loadFragment(fragment: Fragment, name: String) {
         try {
+            // Check if fragment container exists
+            if (findViewById<View>(R.id.fragment_container) == null) {
+                showToast("ERROR: Fragment container not found!")
+                return
+            }
+
             supportFragmentManager.beginTransaction()
                 .replace(R.id.fragment_container, fragment)
                 .commit()
+
+            showToast("$name loaded successfully! ✅")
         } catch (e: Exception) {
-            showToast("Error loading screen")
+            showToast("Error loading $name: ${e.message}")
             e.printStackTrace()
         }
+    }
+
+    // Implement DashboardListener interface methods
+    override fun navigateToWorkout() {
+        binding.bottomNavigation.selectedItemId = R.id.navigation_workout
+    }
+
+    override fun navigateToGoals() {
+        binding.bottomNavigation.selectedItemId = R.id.navigation_goals
+    }
+
+    override fun navigateToHistory() {
+        binding.bottomNavigation.selectedItemId = R.id.navigation_history
     }
 
     private fun syncData() {
@@ -128,15 +152,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        super.onBackPressed()
-        // Don't exit app on back press, just go to dashboard
         if (binding.bottomNavigation.selectedItemId != R.id.navigation_dashboard) {
-            // If not on dashboard, go to dashboard
             binding.bottomNavigation.selectedItemId = R.id.navigation_dashboard
         } else {
-            // If already on dashboard, minimize app instead of closing
             moveTaskToBack(true)
         }
-        // DON'T call super.onBackPressed() - that would finish the activity
     }
 }

@@ -29,28 +29,37 @@ class HistoryFragment : Fragment() {
         setupSampleData()
     }
 
+    private fun setupFilterChips() {
+        binding.filterAll?.setOnClickListener {
+            showToast("Showing all workouts")
+        }
+
+        binding.filterRunning?.setOnClickListener {
+            showToast("Showing running workouts")
+        }
+
+        binding.filterCycling?.setOnClickListener {
+            showToast("Showing cycling workouts")
+        }
+
+        binding.filterWeightlifting?.setOnClickListener {
+            showToast("Showing weightlifting workouts")
+        }
+    }
+
     private fun setupClickListeners() {
-        binding.filterAll.setOnClickListener {
-            showToast("All Workouts Filter")
-        }
+        setupFilterChips()
 
-        binding.filterRunning.setOnClickListener {
-            showToast("Running Filter")
-        }
-
-        binding.filterCycling.setOnClickListener {
-            showToast("Cycling Filter")
-        }
-
-        binding.filterWeightlifting.setOnClickListener {
-            showToast("Weightlifting Filter")
+        // If there's a button in empty state
+        binding.emptyStateLayout?.setOnClickListener {
+            showToast("Start your first workout!")
         }
     }
 
     private fun setupSampleData() {
-        binding.totalWorkoutsStats.text = "12"
-        binding.totalCaloriesStats.text = "1,250"
-        binding.totalDurationStats.text = "360"
+        binding.totalWorkoutsStats?.text = "12"
+        binding.totalCaloriesStats?.text = "1,250"
+        binding.totalDurationStats?.text = "360"
     }
 
     override fun onDestroyView() {

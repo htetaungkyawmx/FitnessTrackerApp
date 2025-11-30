@@ -26,28 +26,56 @@ class WorkoutFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         setupClickListeners()
+        setupWorkoutTypeSelector()
+    }
+
+    private fun setupWorkoutTypeSelector() {
+        binding.chipRunning?.setOnClickListener {
+            showToast("Running workout selected")
+            updateUIForWorkoutType("RUNNING")
+        }
+
+        binding.chipCycling?.setOnClickListener {
+            showToast("Cycling workout selected")
+            updateUIForWorkoutType("CYCLING")
+        }
+
+        binding.chipWeightlifting?.setOnClickListener {
+            showToast("Weightlifting workout selected")
+            updateUIForWorkoutType("WEIGHTLIFTING")
+        }
+    }
+
+    private fun updateUIForWorkoutType(type: String) {
+        when (type) {
+            "RUNNING", "CYCLING" -> {
+                binding.distanceLayout?.visibility = View.VISIBLE
+                binding.exercisesLayout?.visibility = View.GONE
+                binding.locationInfo?.visibility = View.VISIBLE
+            }
+            "WEIGHTLIFTING" -> {
+                binding.distanceLayout?.visibility = View.GONE
+                binding.exercisesLayout?.visibility = View.VISIBLE
+                binding.locationInfo?.visibility = View.GONE
+            }
+        }
     }
 
     private fun setupClickListeners() {
-        binding.startStopButton.setOnClickListener {
-            showToast("Start Workout Clicked")
+        binding.startStopButton?.setOnClickListener {
+            showToast("Workout started! Let's go! 💪")
+            // Simulate workout start
+            binding.trackingLayout?.visibility = View.VISIBLE
+            binding.setupLayout?.visibility = View.GONE
         }
 
-        binding.chipRunning.setOnClickListener {
-            showToast("Running Selected")
+        binding.addExerciseButton?.setOnClickListener {
+            showToast("Add exercise dialog would open here")
         }
 
-        binding.chipCycling.setOnClickListener {
-            showToast("Cycling Selected")
-        }
-
-        binding.chipWeightlifting.setOnClickListener {
-            showToast("Weightlifting Selected")
-        }
-
-        binding.addExerciseButton.setOnClickListener {
-            showToast("Add Exercise Clicked")
-        }
+        // Set default selection
+        binding.chipRunning?.isChecked = true
+        updateUIForWorkoutType("RUNNING")
     }
 
     override fun onDestroyView() {
