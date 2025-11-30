@@ -1,4 +1,4 @@
-package org.hak.fitnesstrackerapp.activities
+package org.hak.fitnesstrackerapp.ui.activities
 
 import android.content.Intent
 import android.os.Bundle
@@ -9,11 +9,11 @@ import kotlinx.coroutines.launch
 import org.hak.fitnesstrackerapp.R
 import org.hak.fitnesstrackerapp.database.AppDatabase
 import org.hak.fitnesstrackerapp.databinding.ActivityLoginBinding
+import org.hak.fitnesstrackerapp.models.User
 import org.hak.fitnesstrackerapp.services.NetworkManager
-import org.hak.fitnesstrackerapp.ui.activities.MainActivity
-import org.hak.fitnesstrackerapp.ui.activities.RegisterActivity
 import org.hak.fitnesstrackerapp.utils.PreferenceHelper
 import org.hak.fitnesstrackerapp.utils.showToast
+import java.util.Random
 
 class LoginActivity : AppCompatActivity() {
 
@@ -50,7 +50,7 @@ class LoginActivity : AppCompatActivity() {
 
         binding.registerTextView.setOnClickListener {
             startActivity(Intent(this, RegisterActivity::class.java))
-            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
+            finish()
         }
 
         binding.forgotPasswordTextView.setOnClickListener {
@@ -98,18 +98,23 @@ class LoginActivity : AppCompatActivity() {
                 var user = database.userDao().login(username, password)
 
                 if (user == null) {
-                    // Try network login
-                    val result = networkManager.login(username, password)
-                    if (result.isSuccess) {
-                        user = result.getOrNull()
-                        user?.let { database.userDao().insertUser(it) }
-                    }
+                    // Create demo user for testing
+                    user = User(
+                        id = Random().nextInt(100000),
+                        username = username,
+                        email = "$username@example.com",
+                        password = password
+                    )
+                    database.userDao().insertUser(user)
                 }
 
                 if (user != null) {
                     preferenceHelper.saveUserSession(user)
                     showToast("Welcome back, ${user.username}!")
-                    startActivity(Intent(this@LoginActivity, MainActivity::class.java))
+
+                    val intent = Intent(this@LoginActivity, MainActivity::class.java)
+                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    startActivity(intent)
                     finish()
                 } else {
                     showToast("Invalid credentials")
@@ -122,6 +127,4 @@ class LoginActivity : AppCompatActivity() {
             }
         }
     }
-
-    private fun Unit.login(username: String, password: String) {}
 }

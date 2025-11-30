@@ -7,14 +7,13 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import org.hak.fitnesstrackerapp.R
-import org.hak.fitnesstrackerapp.activities.LoginActivity
-import org.hak.fitnesstrackerapp.databinding.ActivityRegisterBinding
 import org.hak.fitnesstrackerapp.database.AppDatabase
+import org.hak.fitnesstrackerapp.databinding.ActivityRegisterBinding
 import org.hak.fitnesstrackerapp.models.User
 import org.hak.fitnesstrackerapp.services.NetworkManager
 import org.hak.fitnesstrackerapp.utils.PreferenceHelper
 import org.hak.fitnesstrackerapp.utils.showToast
-import java.util.*
+import java.util.Random
 
 class RegisterActivity : AppCompatActivity() {
 

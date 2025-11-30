@@ -6,7 +6,6 @@ import android.os.Handler
 import android.os.Looper
 import androidx.appcompat.app.AppCompatActivity
 import org.hak.fitnesstrackerapp.R
-import org.hak.fitnesstrackerapp.activities.LoginActivity
 import org.hak.fitnesstrackerapp.utils.PreferenceHelper
 
 class SplashActivity : AppCompatActivity() {
@@ -26,11 +25,13 @@ class SplashActivity : AppCompatActivity() {
     }
 
     private fun checkLoginStatus() {
-        if (preferenceHelper.isLoggedIn() && preferenceHelper.isSessionValid()) {
-            startActivity(Intent(this, MainActivity::class.java))
+        val intent = if (preferenceHelper.isLoggedIn() && preferenceHelper.isSessionValid()) {
+            Intent(this, MainActivity::class.java)
         } else {
-            startActivity(Intent(this, LoginActivity::class.java))
+            Intent(this, LoginActivity::class.java)
         }
-        finish()
+
+        startActivity(intent)
+        finish() // Close splash activity properly
     }
 }

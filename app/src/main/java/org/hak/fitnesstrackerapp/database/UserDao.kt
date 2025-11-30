@@ -5,7 +5,6 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
-import kotlinx.coroutines.flow.Flow
 import org.hak.fitnesstrackerapp.models.User
 
 @Dao
@@ -17,7 +16,7 @@ interface UserDao {
     suspend fun getUserByUsername(username: String): User?
 
     @Query("SELECT * FROM users WHERE id = :userId")
-    fun getUserById(userId: Int): Flow<User>
+    suspend fun getUserById(userId: Int): User?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertUser(user: User)

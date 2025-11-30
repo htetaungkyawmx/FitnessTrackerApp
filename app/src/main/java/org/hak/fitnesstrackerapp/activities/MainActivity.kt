@@ -5,7 +5,6 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import org.hak.fitnesstrackerapp.R
-import org.hak.fitnesstrackerapp.activities.LoginActivity
 import org.hak.fitnesstrackerapp.databinding.ActivityMainBinding
 import org.hak.fitnesstrackerapp.fragments.DashboardFragment
 import org.hak.fitnesstrackerapp.fragments.GoalsFragment
@@ -58,7 +57,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupNavigation() {
-        binding.bottomNavigation.setOnNavigationItemSelectedListener { item ->
+        binding.bottomNavigation.setOnItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.navigation_dashboard -> {
                     loadFragment(DashboardFragment())
@@ -93,12 +92,6 @@ class MainActivity : AppCompatActivity() {
 
     private fun loadFragment(fragment: Fragment) {
         supportFragmentManager.beginTransaction()
-            .setCustomAnimations(
-                R.anim.fade_in,
-                R.anim.fade_out,
-                R.anim.fade_in,
-                R.anim.fade_out
-            )
             .replace(R.id.fragment_container, fragment)
             .commit()
     }
@@ -111,7 +104,9 @@ class MainActivity : AppCompatActivity() {
     private fun logout() {
         preferenceHelper.clearSession()
         showToast("Logged out successfully")
-        startActivity(Intent(this, LoginActivity::class.java))
+        val intent = Intent(this, LoginActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        startActivity(intent)
         finish()
     }
 
