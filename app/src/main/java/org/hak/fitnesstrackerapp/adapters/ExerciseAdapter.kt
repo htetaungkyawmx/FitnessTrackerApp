@@ -14,7 +14,7 @@ import com.google.android.material.card.MaterialCardView
 import com.google.android.material.chip.Chip
 import org.hak.fitnesstrackerapp.R
 import org.hak.fitnesstrackerapp.models.Exercise
-import org.hak.fitnesstrackerapp.models.getIconRes
+import org.hak.fitnesstrackerapp.models.ExerciseCategory
 
 class ExerciseAdapter(
     private val onExerciseClick: (Exercise) -> Unit = {},
@@ -83,7 +83,7 @@ class ExerciseAdapter(
             // Set basic exercise information
             exerciseName.text = exercise.name
             exerciseDetails.text = exercise.getFormattedDetails()
-            exerciseCategory.text = exercise.category
+            exerciseCategory.text = exercise.category.getDisplayName()
 
             // Set category chip color
             exerciseCategory.setChipBackgroundColorResource(
@@ -91,7 +91,7 @@ class ExerciseAdapter(
             )
 
             // Set exercise icon
-            exerciseIcon.setImageResource(exercise.category.getIconRes())
+            exerciseIcon.setImageResource(getCategoryIcon(exercise.category))
 
             // Show/hide edit icon based on mode
             editIcon.visibility = if (editMode) View.VISIBLE else View.GONE
@@ -121,8 +121,8 @@ class ExerciseAdapter(
                 volumeText.text = "Volume: ${exercise.getTotalVolume().format(1)} kg"
                 oneRepMaxText.text = "1RM: ${exercise.getOneRepMax().format(1)} kg"
 
-                // Show completion badge
-                completedBadge.visibility = if (exercise.isCompleted()) View.VISIBLE else View.GONE
+                // FIXED: Use checkCompletion() instead of isCompleted()
+                completedBadge.visibility = if (exercise.checkCompletion()) View.VISIBLE else View.GONE
             } else {
                 progressBar.visibility = View.GONE
                 progressText.visibility = View.GONE
@@ -191,18 +191,27 @@ class ExerciseAdapter(
             return setView
         }
 
-        private fun getCategoryColor(category: String): Int {
-            return when (category.lowercase()) {
-                "chest" -> R.color.category_chest
-                "back" -> R.color.category_back
-                "legs" -> R.color.category_legs
-                "shoulders" -> R.color.category_shoulders
-                "arms" -> R.color.category_arms
-                "core" -> R.color.category_core
-                "cardio" -> R.color.category_cardio
-                "strength" -> R.color.category_strength
-                "flexibility" -> R.color.category_flexibility
-                else -> R.color.category_other
+        private fun getCategoryColor(category: ExerciseCategory): Int {
+            return when (category) {
+                ExerciseCategory.CHEST -> R.color.category_chest
+                ExerciseCategory.BACK -> R.color.category_back
+                ExerciseCategory.LEGS -> R.color.category_legs
+                ExerciseCategory.SHOULDERS -> R.color.category_shoulders
+                ExerciseCategory.ARMS -> R.color.category_arms
+                ExerciseCategory.CORE -> R.color.category_core
+                ExerciseCategory.CARDIO -> R.color.category_cardio
+            }
+        }
+
+        private fun getCategoryIcon(category: ExerciseCategory): Int {
+            return when (category) {
+                ExerciseCategory.CHEST -> R.drawable.ic_chest
+                ExerciseCategory.BACK -> R.drawable.ic_back
+                ExerciseCategory.LEGS -> R.drawable.ic_legs
+                ExerciseCategory.SHOULDERS -> R.drawable.ic_shoulders
+                ExerciseCategory.ARMS -> R.drawable.ic_arms
+                ExerciseCategory.CORE -> R.drawable.ic_core
+                ExerciseCategory.CARDIO -> R.drawable.ic_cardio
             }
         }
     }

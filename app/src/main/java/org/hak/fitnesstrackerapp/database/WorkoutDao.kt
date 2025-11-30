@@ -1,13 +1,16 @@
 package org.hak.fitnesstrackerapp.database
 
-import androidx.room.*
+import androidx.room.Dao
+import androidx.room.Delete
+import androidx.room.Insert
+import androidx.room.Query
+import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 import org.hak.fitnesstrackerapp.models.Workout
 import java.util.Date
 
 @Dao
 interface WorkoutDao {
-
     @Query("SELECT * FROM workouts WHERE userId = :userId ORDER BY date DESC")
     fun getWorkoutsByUser(userId: Int): Flow<List<Workout>>
 

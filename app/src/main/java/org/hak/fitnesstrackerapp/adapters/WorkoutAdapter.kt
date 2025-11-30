@@ -6,9 +6,10 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import org.hak.fitnesstrackerapp.R
 import org.hak.fitnesstrackerapp.databinding.ItemWorkoutBinding
 import org.hak.fitnesstrackerapp.models.Workout
-import org.hak.fitnesstrackerapp.models.getIconRes
+import org.hak.fitnesstrackerapp.models.WorkoutType
 import org.hak.fitnesstrackerapp.utils.DateUtils
 
 class WorkoutAdapter(
@@ -38,8 +39,8 @@ class WorkoutAdapter(
         }
 
         fun bind(workout: Workout) {
-            binding.workoutIcon.setImageResource(workout.getIconRes())
-            binding.workoutTypeText.text = (workout.type ?: "Unknown") as CharSequence?
+            binding.workoutIcon.setImageResource(getWorkoutIcon(workout.type)) // FIXED: Use helper function
+            binding.workoutTypeText.text = workout.type.toString()
             binding.workoutDurationText.text = "${workout.duration} min"
             binding.workoutCaloriesText.text = "${workout.calories} cal"
             binding.workoutDateText.text = DateUtils.formatDate(workout.date)
@@ -50,6 +51,14 @@ class WorkoutAdapter(
                 binding.workoutDetailsText.visibility = View.VISIBLE
             } ?: run {
                 binding.workoutDetailsText.visibility = View.GONE
+            }
+        }
+
+        private fun getWorkoutIcon(workoutType: WorkoutType): Int { // FIXED: Helper function
+            return when (workoutType) {
+                WorkoutType.RUNNING -> R.drawable.ic_running
+                WorkoutType.CYCLING -> R.drawable.ic_cycling
+                WorkoutType.WEIGHTLIFTING -> R.drawable.ic_weightlifting
             }
         }
     }

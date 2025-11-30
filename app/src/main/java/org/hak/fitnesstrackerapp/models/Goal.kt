@@ -14,7 +14,7 @@ data class Goal(
     val targetValue: Double,
     val currentValue: Double = 0.0,
     val unit: String,
-    val deadline: Long, // Store as timestamp
+    val deadline: Long,
     val type: GoalType,
     val isCompleted: Boolean = false,
     val createdAt: Long = System.currentTimeMillis()
@@ -34,8 +34,5 @@ data class Goal(
 }
 
 enum class GoalType {
-    WEIGHT_LOSS,
-    DISTANCE,
-    WORKOUT_COUNT,
-    CALORIES
+    WEIGHT_LOSS, DISTANCE, WORKOUT_COUNT, CALORIES
 }

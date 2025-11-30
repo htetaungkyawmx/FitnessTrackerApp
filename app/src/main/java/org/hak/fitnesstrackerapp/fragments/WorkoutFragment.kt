@@ -15,13 +15,13 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.google.android.material.textfield.TextInputEditText
 import kotlinx.coroutines.launch
-import org.hak.fitnesstrackerapp.FitnessTrackerApp
 import org.hak.fitnesstrackerapp.R
 import org.hak.fitnesstrackerapp.database.AppDatabase
 import org.hak.fitnesstrackerapp.databinding.FragmentWorkoutBinding
+import org.hak.fitnesstrackerapp.managers.ExerciseManager
 import org.hak.fitnesstrackerapp.models.Exercise
+import org.hak.fitnesstrackerapp.models.ExerciseCategory
 import org.hak.fitnesstrackerapp.models.Workout
 import org.hak.fitnesstrackerapp.models.WorkoutType
 import org.hak.fitnesstrackerapp.services.LocationService
@@ -58,7 +58,7 @@ class WorkoutFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        database = FitnessTrackerApp.instance.database
+        database = org.hak.fitnesstrackerapp.FitnessTrackerApp.instance.database
         preferenceHelper = PreferenceHelper(requireContext())
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
         locationService = LocationService()
@@ -85,6 +85,8 @@ class WorkoutFragment : Fragment() {
                 }
             }
         }
+        // Set default selection
+        binding.chipRunning.isChecked = true
     }
 
     private fun updateUIForWorkoutType() {
@@ -113,10 +115,6 @@ class WorkoutFragment : Fragment() {
 
         binding.addExerciseButton.setOnClickListener {
             showAddExerciseDialog()
-        }
-
-        binding.pauseResumeButton.setOnClickListener {
-            togglePauseResume()
         }
     }
 
@@ -154,19 +152,6 @@ class WorkoutFragment : Fragment() {
         saveWorkout()
     }
 
-    private fun togglePauseResume() {
-        if (workoutTimer != null) {
-            workoutTimer?.cancel()
-            workoutTimer = null
-            binding.pauseResumeButton.text = "RESUME"
-            showToast("Workout paused")
-        } else {
-            startTimer()
-            binding.pauseResumeButton.text = "PAUSE"
-            showToast("Workout resumed")
-        }
-    }
-
     private fun startTimer() {
         workoutTimer = object : CountDownTimer(Long.MAX_VALUE, 1000) {
             override fun onTick(millisUntilFinished: Long) {
@@ -185,13 +170,11 @@ class WorkoutFragment : Fragment() {
 
         binding.timerText.text = String.format("%02d:%02d:%02d", hours, minutes, seconds)
 
-        // Update calories estimate
         val calories = calculateCalories()
         binding.caloriesText.text = String.format("%.0f cal", calories)
     }
 
     private fun calculateCalories(): Double {
-        // Simple calorie calculation based on time and workout type
         return when (workoutType) {
             WorkoutType.RUNNING -> elapsedSeconds * 0.2
             WorkoutType.CYCLING -> elapsedSeconds * 0.15
@@ -215,10 +198,7 @@ class WorkoutFragment : Fragment() {
         }
     }
 
-    private fun updateLocationInfo(location: Location) {
-        binding.speedText.text = String.format("%.1f km/h", location.speed * 3.6)
-    }
-
+    // FIXED: Add the missing requestLocationPermission method
     private fun requestLocationPermission() {
         requestPermissions(
             arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
@@ -226,12 +206,16 @@ class WorkoutFragment : Fragment() {
         )
     }
 
+    private fun updateLocationInfo(location: Location) {
+        binding.speedText.text = String.format("%.1f km/h", location.speed * 3.6)
+    }
+
     private fun showAddExerciseDialog() {
         val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_add_exercise, null)
-        val exerciseName = dialogView.findViewById<TextInputEditText>(R.id.exerciseNameEditText)
-        val setsEditText = dialogView.findViewById<TextInputEditText>(R.id.setsEditText)
-        val repsEditText = dialogView.findViewById<TextInputEditText>(R.id.repsEditText)
-        val weightEditText = dialogView.findViewById<TextInputEditText>(R.id.weightEditText)
+        val exerciseName = dialogView.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.exerciseNameEditText)
+        val setsEditText = dialogView.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.setsEditText)
+        val repsEditText = dialogView.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.repsEditText)
+        val weightEditText = dialogView.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.weightEditText)
 
         MaterialAlertDialogBuilder(requireContext())
             .setTitle("Add Exercise")
@@ -243,15 +227,12 @@ class WorkoutFragment : Fragment() {
                 val weight = weightEditText.text.toString().toDoubleOrNull() ?: 0.0
 
                 if (name.isNotEmpty() && sets > 0 && reps > 0) {
-                    val exercise = Exercise(
+                    val exercise = ExerciseManager.createCustomExercise(
                         name = name,
+                        category = ExerciseCategory.ARMS, // Default category
                         sets = sets,
                         reps = reps,
-                        weight = weight,
-                        id = TODO(),
-                        category = TODO(),
-                        completedSets = TODO(),
-                        notes = TODO()
+                        weight = weight
                     )
                     exercises.add(exercise)
                     updateExercisesList()
@@ -290,6 +271,7 @@ class WorkoutFragment : Fragment() {
             exercises.clear()
             binding.distanceEditText.setText("")
             binding.exercisesText.text = ""
+            binding.notesEditText.setText("")
         }
     }
 
@@ -352,10 +334,7 @@ class WorkoutFragment : Fragment() {
                 Manifest.permission.ACCESS_FINE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED
         ) {
-            requestPermissions(
-                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-                LOCATION_PERMISSION_REQUEST
-            )
+            requestLocationPermission()
         }
     }
 

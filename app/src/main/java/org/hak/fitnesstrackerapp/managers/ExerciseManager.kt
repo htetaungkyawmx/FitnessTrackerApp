@@ -92,7 +92,6 @@ object ExerciseManager {
     }
 
     fun calculateOneRepMax(weight: Double, reps: Int): Double {
-        // Using Epley formula: 1RM = weight × (1 + reps / 30)
         return weight * (1 + reps / 30.0)
     }
 

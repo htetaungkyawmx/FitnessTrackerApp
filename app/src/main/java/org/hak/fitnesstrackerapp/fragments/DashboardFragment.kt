@@ -19,7 +19,7 @@ import org.hak.fitnesstrackerapp.activities.WorkoutDetailActivity
 import org.hak.fitnesstrackerapp.database.AppDatabase
 import org.hak.fitnesstrackerapp.databinding.FragmentDashboardBinding
 import org.hak.fitnesstrackerapp.models.Workout
-import org.hak.fitnesstrackerapp.models.getIconRes
+import org.hak.fitnesstrackerapp.models.WorkoutType
 import org.hak.fitnesstrackerapp.utils.DateUtils
 import org.hak.fitnesstrackerapp.utils.PreferenceHelper
 import org.hak.fitnesstrackerapp.utils.showToast
@@ -78,10 +78,10 @@ class DashboardFragment : Fragment() {
 
             // Load stats
             val totalWorkouts = database.workoutDao().getTotalWorkouts(userId)
-            val totalCalories = database.workoutDao().getTotalCalories(userId)
+            val totalCalories = database.workoutDao().getTotalCalories(userId) ?: 0.0
             val totalDuration = database.workoutDao().getTotalDuration(userId)
-            val runningDistance = database.workoutDao().getTotalRunningDistance(userId)
-            val cyclingDistance = database.workoutDao().getTotalCyclingDistance(userId)
+            val runningDistance = database.workoutDao().getTotalRunningDistance(userId) ?: 0.0
+            val cyclingDistance = database.workoutDao().getTotalCyclingDistance(userId) ?: 0.0
 
             binding.totalWorkoutsText.text = totalWorkouts.toString()
             binding.totalCaloriesText.text = String.format("%.0f", totalCalories)
@@ -110,33 +110,41 @@ class DashboardFragment : Fragment() {
         workouts.forEachIndexed { index, workout ->
             when (index) {
                 0 -> {
-                    binding.workout1Type.setImageResource(workout.getIconRes())
-                    binding.workout1Title.text = workout.type.name
-                    binding.workout1Subtitle.text = "${workout.duration} min • ${workout.calories.toInt()} cal"
-                    binding.workout1Date.text = DateUtils.formatDate(workout.date.time)
+                    binding.workout1Type.setImageResource(getWorkoutIcon(workout.type)) // FIXED: Use helper function
+                    binding.workout1Title.text = workout.type.toString()
+                    binding.workout1Subtitle.text = "${workout.duration} min • ${workout.calories} cal"
+                    binding.workout1Date.text = DateUtils.formatDate(workout.date)
                     binding.workout1Card.setOnClickListener {
                         showWorkoutDetails(workout)
                     }
                 }
                 1 -> {
-                    binding.workout2Type.setImageResource(workout.getIconRes())
-                    binding.workout2Title.text = workout.type.name
-                    binding.workout2Subtitle.text = "${workout.duration} min • ${workout.calories.toInt()} cal"
-                    binding.workout2Date.text = DateUtils.formatDate(workout.date.time)
+                    binding.workout2Type.setImageResource(getWorkoutIcon(workout.type)) // FIXED: Use helper function
+                    binding.workout2Title.text = workout.type.toString()
+                    binding.workout2Subtitle.text = "${workout.duration} min • ${workout.calories} cal"
+                    binding.workout2Date.text = DateUtils.formatDate(workout.date)
                     binding.workout2Card.setOnClickListener {
                         showWorkoutDetails(workout)
                     }
                 }
                 2 -> {
-                    binding.workout3Type.setImageResource(workout.getIconRes())
-                    binding.workout3Title.text = workout.type.name
-                    binding.workout3Subtitle.text = "${workout.duration} min • ${workout.calories.toInt()} cal"
-                    binding.workout3Date.text = DateUtils.formatDate(workout.date.time)
+                    binding.workout3Type.setImageResource(getWorkoutIcon(workout.type)) // FIXED: Use helper function
+                    binding.workout3Title.text = workout.type.toString()
+                    binding.workout3Subtitle.text = "${workout.duration} min • ${workout.calories} cal"
+                    binding.workout3Date.text = DateUtils.formatDate(workout.date)
                     binding.workout3Card.setOnClickListener {
                         showWorkoutDetails(workout)
                     }
                 }
             }
+        }
+    }
+
+    private fun getWorkoutIcon(workoutType: WorkoutType): Int { // FIXED: Helper function
+        return when (workoutType) {
+            WorkoutType.RUNNING -> R.drawable.ic_running
+            WorkoutType.CYCLING -> R.drawable.ic_cycling
+            WorkoutType.WEIGHTLIFTING -> R.drawable.ic_weightlifting
         }
     }
 
@@ -182,7 +190,7 @@ class DashboardFragment : Fragment() {
 
     private fun showWorkoutDetails(workout: Workout) {
         val intent = Intent(requireContext(), WorkoutDetailActivity::class.java)
-        intent.putExtra("workout", 100)
+        intent.putExtra("workout", workout)
         startActivity(intent)
     }
 

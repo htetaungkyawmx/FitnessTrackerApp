@@ -12,22 +12,17 @@ data class Exercise(
     val sets: Int,
     val reps: Int,
     val weight: Double,
-    val notes: String? = null
+    val completedSets: Int = 0,
+    val notes: String? = null,
+    val createdAt: Long = System.currentTimeMillis(),
+    val isCompleted: Boolean = false
 ) {
-    fun getTotalVolume(): Double {
-        return sets * reps * weight
-    }
-}
+    fun getTotalVolume(): Double = sets * reps * weight
+    fun getProgressPercentage(): Double = if (sets > 0) (completedSets.toDouble() / sets) * 100 else 0.0
 
-// Add ExerciseCategory converter if you're storing exercises in Room database
-class ExerciseCategoryConverter {
-    @androidx.room.TypeConverter
-    fun fromExerciseCategory(category: ExerciseCategory): String {
-        return category.name
-    }
+    // FIXED: Renamed the function to avoid conflict with property
+    fun checkCompletion(): Boolean = completedSets >= sets
 
-    @androidx.room.TypeConverter
-    fun toExerciseCategory(value: String): ExerciseCategory {
-        return ExerciseCategory.valueOf(value)
-    }
+    fun getOneRepMax(): Double = weight * (1 + reps / 30.0)
+    fun getFormattedDetails(): String = "$sets x $reps ${if (weight > 0) "@ ${weight}kg" else "bodyweight"}"
 }

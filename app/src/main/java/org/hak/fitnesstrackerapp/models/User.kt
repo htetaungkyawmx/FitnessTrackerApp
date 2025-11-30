@@ -3,7 +3,6 @@ package org.hak.fitnesstrackerapp.models
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
-import java.util.Date
 
 @Entity(tableName = "users")
 data class User(
@@ -30,8 +29,8 @@ data class User(
     val age: Int? = null,
 
     @SerializedName("created_at")
-    val createdAt: Date = Date(),
+    val createdAt: Long = System.currentTimeMillis(),
 
     @SerializedName("last_login")
-    val lastLogin: Date? = null
+    val lastLogin: Long? = null
 )
