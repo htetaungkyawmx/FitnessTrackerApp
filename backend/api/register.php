@@ -1,89 +1,44 @@
 <?php
-header("Content-Type: application/json");
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: POST, GET, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
-
-require_once '../config/database.php';
-
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(200);
-    exit();
-}
+include '../db_connection.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    try {
-        $input = json_decode(file_get_contents('php://input'), true);
+    $data = json_decode(file_get_contents("php://input"));
 
-        if (!$input) {
-            sendError("Invalid JSON input");
+    $username = $conn->real_escape_string($data->username);
+    $email = $conn->real_escape_string($data->email);
+    $password = password_hash($data->password, PASSWORD_DEFAULT);
+
+    // Check if user exists
+    $checkQuery = "SELECT * FROM users WHERE email = '$email' OR username = '$username'";
+    $checkResult = $conn->query($checkQuery);
+
+    if ($checkResult->num_rows > 0) {
+        echo json_encode([
+            "success" => false,
+            "message" => "User already exists"
+        ]);
+    } else {
+        $sql = "INSERT INTO users (username, email, password)
+                VALUES ('$username', '$email', '$password')";
+
+        if ($conn->query($sql) === TRUE) {
+            // Create user stats entry
+            $user_id = $conn->insert_id;
+            $stats_sql = "INSERT INTO user_stats (user_id) VALUES ($user_id)";
+            $conn->query($stats_sql);
+
+            echo json_encode([
+                "success" => true,
+                "message" => "Registration successful",
+                "user_id" => $user_id
+            ]);
+        } else {
+            echo json_encode([
+                "success" => false,
+                "message" => "Registration failed: " . $conn->error
+            ]);
         }
-
-        $username = $input['username'] ?? '';
-        $email = $input['email'] ?? '';
-        $password = $input['password'] ?? '';
-
-        // Validation
-        if (empty($username) || empty($email) || empty($password)) {
-            sendError("All fields are required");
-        }
-
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            sendError("Invalid email format");
-        }
-
-        if (strlen($username) < 3) {
-            sendError("Username must be at least 3 characters long");
-        }
-
-        if (strlen($password) < 6) {
-            sendError("Password must be at least 6 characters long");
-        }
-
-        $database = new Database();
-        $db = $database->getConnection();
-
-        // Check if username or email already exists
-        $checkQuery = "SELECT id FROM users WHERE username = :username OR email = :email";
-        $checkStmt = $db->prepare($checkQuery);
-        $checkStmt->bindParam(":username", $username);
-        $checkStmt->bindParam(":email", $email);
-        $checkStmt->execute();
-
-        if ($checkStmt->rowCount() > 0) {
-            sendError("Username or email already exists", 409);
-        }
-
-        // Insert new user
-        $insertQuery = "INSERT INTO users (username, email, password, created_at)
-                       VALUES (:username, :email, :password, NOW())";
-        $insertStmt = $db->prepare($insertQuery);
-        $insertStmt->bindParam(":username", $username);
-        $insertStmt->bindParam(":email", $email);
-        $insertStmt->bindParam(":password", $password);
-
-        if (!$insertStmt->execute()) {
-            sendError("Failed to create user account", 500);
-        }
-
-        $userId = $db->lastInsertId();
-
-        // Get the created user
-        $userQuery = "SELECT id, username, email, created_at FROM users WHERE id = :id";
-        $userStmt = $db->prepare($userQuery);
-        $userStmt->bindParam(":id", $userId);
-        $userStmt->execute();
-
-        $user = $userStmt->fetch();
-        $user['id'] = (int)$user['id'];
-
-        sendSuccess($user, "Registration successful");
-
-    } catch (Exception $e) {
-        error_log("Registration error: " . $e->getMessage());
-        sendError("Server error: " . $e->getMessage(), 500);
     }
-} else {
-    sendError("Method not allowed", 405);
 }
+$conn->close();
 ?>

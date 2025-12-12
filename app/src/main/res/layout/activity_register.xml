@@ -51,20 +51,20 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:gravity="center"
                     android:text="Join Fitness Tracker"
                     android:textSize="22sp"
-                    android:textStyle="bold"
-                    android:gravity="center"
-                    android:layout_marginBottom="8dp" />
+                    android:textStyle="bold" />
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Start your fitness journey today"
-                    android:textSize="14sp"
-                    android:textColor="@color/gray"
+                    android:layout_marginBottom="24dp"
                     android:gravity="center"
-                    android:layout_marginBottom="24dp" />
+                    android:text="Start your fitness journey today"
+                    android:textColor="@color/gray"
+                    android:textSize="14sp" />
 
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/usernameTextInputLayout"
@@ -120,8 +120,8 @@
                     app:boxCornerRadiusBottomStart="12dp"
                     app:boxCornerRadiusTopEnd="12dp"
                     app:boxCornerRadiusTopStart="12dp"
-                    app:startIconDrawable="@drawable/ic_lock"
-                    app:endIconMode="password_toggle">
+                    app:endIconMode="password_toggle"
+                    app:startIconDrawable="@drawable/ic_lock">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/passwordEditText"
@@ -143,8 +143,8 @@
                     app:boxCornerRadiusBottomStart="12dp"
                     app:boxCornerRadiusTopEnd="12dp"
                     app:boxCornerRadiusTopStart="12dp"
-                    app:startIconDrawable="@drawable/ic_lock"
-                    app:endIconMode="password_toggle">
+                    app:endIconMode="password_toggle"
+                    app:startIconDrawable="@drawable/ic_lock">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/confirmPasswordEditText"
@@ -158,14 +158,14 @@
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/registerButton"
+                    style="@style/Widget.Material3.Button"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp"
                     android:text="Create Account"
                     android:textSize="16sp"
                     android:textStyle="bold"
-                    app:cornerRadius="12dp"
-                    android:layout_marginBottom="16dp"
-                    style="@style/Widget.Material3.Button" />
+                    app:cornerRadius="12dp" />
 
                 <ProgressBar
                     android:id="@+id/progressBar"
@@ -177,9 +177,9 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
+                    android:layout_marginTop="16dp"
                     android:gravity="center"
-                    android:layout_marginTop="16dp">
+                    android:orientation="horizontal">
 
                     <TextView
                         android:layout_width="wrap_content"
