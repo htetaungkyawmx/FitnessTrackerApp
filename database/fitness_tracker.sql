@@ -1,59 +1,56 @@
--- Database: fitness_tracker
+-- Complete Database Schema
+
 CREATE DATABASE IF NOT EXISTS fitness_tracker;
 USE fitness_tracker;
 
--- Table: users
+-- Users table
 CREATE TABLE users (
     id INT PRIMARY KEY AUTO_INCREMENT,
     username VARCHAR(50) UNIQUE NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
-    password VARCHAR(255) NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    height_cm DECIMAL(5,2),
+    weight_kg DECIMAL(5,2),
+    birth_date DATE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
--- Table: activities
+-- Activities table
 CREATE TABLE activities (
     id INT PRIMARY KEY AUTO_INCREMENT,
     user_id INT NOT NULL,
-    activity_type ENUM('running', 'cycling', 'weightlifting') NOT NULL,
-    duration INT NOT NULL COMMENT 'Duration in minutes',
-    distance DECIMAL(8,2) COMMENT 'Distance in km (for running/cycling)',
-    weight DECIMAL(8,2) COMMENT 'Weight in kg (for weightlifting)',
-    sets INT COMMENT 'Number of sets (for weightlifting)',
-    reps INT COMMENT 'Number of reps (for weightlifting)',
+    activity_type ENUM('running', 'cycling', 'weightlifting', 'swimming', 'yoga', 'walking', 'other') NOT NULL,
+    duration_minutes INT NOT NULL,
+    distance_km DECIMAL(6,2),
     calories_burned INT,
     notes TEXT,
-    activity_date DATE NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_user_date (user_id, created_at)
 );
 
--- Table: goals
+-- Goals table
 CREATE TABLE goals (
     id INT PRIMARY KEY AUTO_INCREMENT,
     user_id INT NOT NULL,
     goal_type VARCHAR(50) NOT NULL,
     target_value DECIMAL(10,2) NOT NULL,
     current_value DECIMAL(10,2) DEFAULT 0,
-    unit VARCHAR(20) NOT NULL,
     deadline DATE,
-    status ENUM('active', 'completed', 'failed') DEFAULT 'active',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    UNIQUE KEY unique_user_goal (user_id, goal_type)
 );
 
--- Table: user_stats
-CREATE TABLE user_stats (
+-- User tokens for authentication
+CREATE TABLE user_tokens (
     id INT PRIMARY KEY AUTO_INCREMENT,
     user_id INT NOT NULL,
-    total_workouts INT DEFAULT 0,
-    total_calories INT DEFAULT 0,
-    total_distance DECIMAL(10,2) DEFAULT 0,
-    last_updated DATE,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    token VARCHAR(64) UNIQUE NOT NULL,
+    expires_at DATETIME NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_token (token)
 );
-
--- Insert sample user (password: 123456)
-INSERT INTO users (username, email, password)
-VALUES ('Htet Aung Kyaw', 'htet@gmail.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi');

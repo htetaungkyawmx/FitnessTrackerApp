@@ -1,78 +1,61 @@
 <?php
-include '../db_connection.php';
+require_once 'config.php';
+
+$userId = validateToken($pdo);
+if (!$userId) {
+    echo json_encode(['success' => false, 'message' => 'Unauthorized']);
+    exit();
+}
+
+$data = json_decode(file_get_contents("php://input"));
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $data = json_decode(file_get_contents("php://input"));
-
-    $user_id = intval($data->user_id);
-    $activity_type = $conn->real_escape_string($data->activity_type);
-    $duration = intval($data->duration);
-    $activity_date = $conn->real_escape_string($data->activity_date);
-
-    // Calculate calories based on activity type
-    $calories_burned = calculateCalories($activity_type, $duration, $data);
-
-    $sql = "INSERT INTO activities (user_id, activity_type, duration, calories_burned, activity_date";
-
-    // Add activity-specific fields
-    if ($activity_type == 'running' || $activity_type == 'cycling') {
-        $distance = floatval($data->distance);
-        $sql .= ", distance) VALUES ($user_id, '$activity_type', $duration, $calories_burned, '$activity_date', $distance)";
-    } else if ($activity_type == 'weightlifting') {
-        $weight = floatval($data->weight);
-        $sets = intval($data->sets);
-        $reps = intval($data->reps);
-        $sql .= ", weight, sets, reps) VALUES ($user_id, '$activity_type', $duration, $calories_burned, '$activity_date', $weight, $sets, $reps)";
+    $required = ['activity_type', 'duration_minutes'];
+    foreach ($required as $field) {
+        if (empty($data->$field)) {
+            echo json_encode(['success' => false, 'message' => "$field is required"]);
+            exit();
+        }
     }
 
-    if ($conn->query($sql) === TRUE) {
-        // Update user stats
-        updateUserStats($conn, $user_id, $activity_type, $duration, $data);
+    // Calculate calories if not provided
+    $calories = $data->calories_burned ?? calculateCalories($data->activity_type, $data->duration_minutes, $data->distance_km ?? 0);
 
+    $stmt = $pdo->prepare("
+        INSERT INTO activities (user_id, activity_type, duration_minutes, distance_km, calories_burned, notes)
+        VALUES (?, ?, ?, ?, ?, ?)
+    ");
+
+    if ($stmt->execute([
+        $userId,
+        $data->activity_type,
+        $data->duration_minutes,
+        $data->distance_km ?? null,
+        $calories,
+        $data->notes ?? ''
+    ])) {
         echo json_encode([
-            "success" => true,
-            "message" => "Activity added successfully",
-            "activity_id" => $conn->insert_id
+            'success' => true,
+            'message' => 'Activity logged successfully',
+            'activity_id' => $pdo->lastInsertId()
         ]);
     } else {
-        echo json_encode([
-            "success" => false,
-            "message" => "Failed to add activity: " . $conn->error
-        ]);
+        echo json_encode(['success' => false, 'message' => 'Failed to log activity']);
     }
 }
 
-function calculateCalories($type, $duration, $data) {
-    // Simplified calorie calculation
-    switch($type) {
-        case 'running':
-            return $duration * 10; // 10 calories per minute
-        case 'cycling':
-            return $duration * 8; // 8 calories per minute
-        case 'weightlifting':
-            return $duration * 5; // 5 calories per minute
-        default:
-            return $duration * 7;
-    }
+function calculateCalories($type, $duration, $distance) {
+    // Simple calorie calculation
+    $caloriesPerMinute = [
+        'running' => 10,
+        'cycling' => 8,
+        'weightlifting' => 5,
+        'swimming' => 7,
+        'yoga' => 3,
+        'walking' => 4
+    ];
+
+    $base = $caloriesPerMinute[$type] ?? 5;
+    return $base * $duration;
 }
-
-function updateUserStats($conn, $user_id, $type, $duration, $data) {
-    // Update total workouts
-    $conn->query("UPDATE user_stats SET total_workouts = total_workouts + 1 WHERE user_id = $user_id");
-
-    // Update total calories
-    $calories = calculateCalories($type, $duration, $data);
-    $conn->query("UPDATE user_stats SET total_calories = total_calories + $calories WHERE user_id = $user_id");
-
-    // Update distance for running/cycling
-    if (($type == 'running' || $type == 'cycling') && isset($data->distance)) {
-        $distance = floatval($data->distance);
-        $conn->query("UPDATE user_stats SET total_distance = total_distance + $distance WHERE user_id = $user_id");
-    }
-
-    // Update last updated date
-    $conn->query("UPDATE user_stats SET last_updated = CURDATE() WHERE user_id = $user_id");
-}
-
-$conn->close();
 ?>

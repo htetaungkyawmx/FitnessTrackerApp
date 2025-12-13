@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/action_edit"
+        android:title="Edit"
+        android:icon="@android:drawable/ic_menu_edit"
+        android:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/action_save"
+        android:title="Save"
+        android:icon="@android:drawable/ic_menu_save"
+        android:showAsAction="ifRoom"
+        android:visible="false" />
+
+    <item
+        android:id="@+id/action_change_password"
+        android:title="Change Password"
+        android:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_logout"
+        android:title="Logout"
+        android:showAsAction="never" />
+
+</menu>

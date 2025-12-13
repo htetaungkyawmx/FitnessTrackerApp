@@ -1,58 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Primary Colors -->
-    <color name="primary">#FF6B35</color>
-    <color name="primary_dark">#E55A2B</color>
-    <color name="primary_light">#FF8A65</color>
+    <!-- Primary colors -->
+    <color name="colorPrimary">#3F51B5</color>
+    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorAccent">#FF4081</color>
 
-    <!-- Secondary Colors -->
-    <color name="secondary">#4ECDC4</color>
-    <color name="secondary_dark">#26A69A</color>
+    <!-- Secondary colors (if needed) -->
+    <color name="secondary">#FF9800</color>
+    <color name="secondary_dark">#F57C00</color>
 
-    <!-- Background & Surface -->
-    <color name="background">#F8F9FA</color>
+    <!-- Basic colors -->
+    <color name="purple_200">#FFBB86FC</color>
+    <color name="purple_500">#FF6200EE</color>
+    <color name="purple_700">#FF3700B3</color>
+    <color name="teal_200">#FF03DAC5</color>
+    <color name="teal_700">#FF018786</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <!-- Custom colors -->
+    <color name="light_gray">#F5F5F5</color>
+    <color name="dark_gray">#616161</color>
+    <color name="red">#F44336</color>
+    <color name="green">#4CAF50</color>
+    <color name="blue">#2196F3</color>
+    <color name="yellow">#FFEB3B</color>
+
+    <!-- Background colors -->
+    <color name="background">#FFFFFF</color>
     <color name="surface">#FFFFFF</color>
+    <color name="error">#B00020</color>
 
-    <!-- Text Colors -->
-    <color name="on_primary">#FFFFFF</color>
-    <color name="on_secondary">#000000</color>
-    <color name="on_background">#212121</color>
-    <color name="on_surface">#212121</color>
+    <!-- Text colors -->
+    <color name="onPrimary">#FFFFFF</color>
+    <color name="onSecondary">#000000</color>
+    <color name="onBackground">#000000</color>
+    <color name="onSurface">#000000</color>
+    <color name="onError">#FFFFFF</color>
 
-    <!-- Status Colors -->
-    <color name="error">#FF5252</color>
-    <color name="success">#4CAF50</color>
-    <color name="warning">#FF9800</color>
-    <color name="info">#2196F3</color>
-
-    <!-- Gray Scale -->
-    <color name="gray">#9E9E9E</color>
-    <color name="gray_light">#E0E0E0</color>
-    <color name="gray_dark">#616161</color>
-
-    <!-- White & Black -->
-    <color name="white">#FFFFFF</color>
-    <color name="black">#000000</color>
-
-    <!-- Gradient Colors -->
-    <color name="gradient_start">#FF6B35</color>
-    <color name="gradient_end">#F7931E</color>
-
-    <!-- Bottom Navigation -->
-    <color name="bottom_nav_color">#FF6B35</color>
-
-    <!-- Exercise Category Colors -->
-    <color name="category_chest">#FF6B9C</color>
-    <color name="category_back">#4A90E2</color>
-    <color name="category_legs">#7ED321</color>
-    <color name="category_shoulders">#BD10E0</color>
-    <color name="category_arms">#F5A623</color>
-    <color name="category_core">#50E3C2</color>
-    <color name="category_cardio">#FF3838</color>
-    <color name="category_strength">#8B572A</color>
-    <color name="category_flexibility">#B8E986</color>
-    <color name="category_other">#9B9B9B</color>
-
-    <!-- Transparent -->
-    <color name="transparent">#00000000</color>
+    <!-- State colors -->
+    <color name="primary_variant">#3700B3</color>
+    <color name="secondary_variant">#018786</color>
 </resources>

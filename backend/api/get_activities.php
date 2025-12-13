@@ -1,23 +1,47 @@
 <?php
-include '../db_connection.php';
+require_once 'config.php';
 
-if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-    $user_id = isset($_GET['user_id']) ? intval($_GET['user_id']) : 0;
-    $limit = isset($_GET['limit']) ? intval($_GET['limit']) : 50;
-
-    $sql = "SELECT * FROM activities WHERE user_id = $user_id ORDER BY activity_date DESC LIMIT $limit";
-    $result = $conn->query($sql);
-
-    $activities = [];
-    while($row = $result->fetch_assoc()) {
-        $activities[] = $row;
-    }
-
-    echo json_encode([
-        "success" => true,
-        "activities" => $activities,
-        "count" => count($activities)
-    ]);
+$userId = validateToken($pdo);
+if (!$userId) {
+    echo json_encode(['success' => false, 'message' => 'Unauthorized']);
+    exit();
 }
-$conn->close();
+
+$stmt = $pdo->prepare("
+    SELECT a.*,
+           DATE_FORMAT(a.created_at, '%Y-%m-%d %H:%i:%s') as formatted_date,
+           CASE
+               WHEN a.activity_type = 'running' THEN '🏃 Running'
+               WHEN a.activity_type = 'cycling' THEN '🚴 Cycling'
+               WHEN a.activity_type = 'weightlifting' THEN '🏋️ Weightlifting'
+               ELSE a.activity_type
+           END as display_name
+    FROM activities a
+    WHERE a.user_id = ?
+    ORDER BY a.created_at DESC
+    LIMIT 50
+");
+
+$stmt->execute([$userId]);
+$activities = $stmt->fetchAll();
+
+// Get statistics
+$statsStmt = $pdo->prepare("
+    SELECT
+        COUNT(*) as total_activities,
+        SUM(duration_minutes) as total_minutes,
+        SUM(calories_burned) as total_calories,
+        AVG(duration_minutes) as avg_duration
+    FROM activities
+    WHERE user_id = ?
+");
+
+$statsStmt->execute([$userId]);
+$stats = $statsStmt->fetch();
+
+echo json_encode([
+    'success' => true,
+    'activities' => $activities,
+    'statistics' => $stats
+]);
 ?>

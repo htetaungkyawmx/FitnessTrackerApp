@@ -1,44 +1,49 @@
 <?php
-include '../db_connection.php';
+require_once 'config.php';
+
+$data = json_decode(file_get_contents("php://input"));
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $data = json_decode(file_get_contents("php://input"));
-
-    $username = $conn->real_escape_string($data->username);
-    $email = $conn->real_escape_string($data->email);
-    $password = password_hash($data->password, PASSWORD_DEFAULT);
+    if (empty($data->username) || empty($data->email) || empty($data->password)) {
+        echo json_encode(['success' => false, 'message' => 'All fields are required']);
+        exit();
+    }
 
     // Check if user exists
-    $checkQuery = "SELECT * FROM users WHERE email = '$email' OR username = '$username'";
-    $checkResult = $conn->query($checkQuery);
+    $checkStmt = $pdo->prepare("SELECT id FROM users WHERE username = ? OR email = ?");
+    $checkStmt->execute([$data->username, $data->email]);
 
-    if ($checkResult->num_rows > 0) {
+    if ($checkStmt->rowCount() > 0) {
+        echo json_encode(['success' => false, 'message' => 'Username or email already exists']);
+        exit();
+    }
+
+    // Hash password
+    $hashedPassword = password_hash($data->password, PASSWORD_BCRYPT);
+
+    // Insert user
+    $stmt = $pdo->prepare("INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)");
+
+    if ($stmt->execute([$data->username, $data->email, $hashedPassword])) {
+        $userId = $pdo->lastInsertId();
+
+        // Generate token
+        $token = bin2hex(random_bytes(32));
+        $tokenStmt = $pdo->prepare("INSERT INTO user_tokens (user_id, token, expires_at) VALUES (?, ?, DATE_ADD(NOW(), INTERVAL 7 DAY))");
+        $tokenStmt->execute([$userId, $token]);
+
         echo json_encode([
-            "success" => false,
-            "message" => "User already exists"
+            'success' => true,
+            'message' => 'Registration successful',
+            'user' => [
+                'id' => $userId,
+                'username' => $data->username,
+                'email' => $data->email
+            ],
+            'token' => $token
         ]);
     } else {
-        $sql = "INSERT INTO users (username, email, password)
-                VALUES ('$username', '$email', '$password')";
-
-        if ($conn->query($sql) === TRUE) {
-            // Create user stats entry
-            $user_id = $conn->insert_id;
-            $stats_sql = "INSERT INTO user_stats (user_id) VALUES ($user_id)";
-            $conn->query($stats_sql);
-
-            echo json_encode([
-                "success" => true,
-                "message" => "Registration successful",
-                "user_id" => $user_id
-            ]);
-        } else {
-            echo json_encode([
-                "success" => false,
-                "message" => "Registration failed: " . $conn->error
-            ]);
-        }
+        echo json_encode(['success' => false, 'message' => 'Registration failed']);
     }
 }
-$conn->close();
 ?>

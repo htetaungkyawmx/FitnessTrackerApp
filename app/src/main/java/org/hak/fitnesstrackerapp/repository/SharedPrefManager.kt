@@ -1,4 +1,63 @@
 package org.hak.fitnesstrackerapp.repository
 
-class SharedPrefManager {
+import android.content.Context
+import android.content.SharedPreferences
+import com.google.gson.Gson
+import org.hak.fitnesstrackerapp.network.models.UserResponse
+
+class SharedPrefManager private constructor(context: Context) {
+
+    companion object {
+        private const val PREF_NAME = "FitnessTrackerPref"
+        private const val KEY_IS_LOGGED_IN = "isLoggedIn"
+        private const val KEY_USER = "user"
+        private const val KEY_TOKEN = "token"
+
+        @Volatile
+        private var INSTANCE: SharedPrefManager? = null
+
+        fun getInstance(context: Context): SharedPrefManager {
+            return INSTANCE ?: synchronized(this) {
+                INSTANCE ?: SharedPrefManager(context.applicationContext).also {
+                    INSTANCE = it
+                }
+            }
+        }
+    }
+
+    private val sharedPreferences: SharedPreferences =
+        context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+    private val editor: SharedPreferences.Editor = sharedPreferences.edit()
+    private val gson = Gson()
+
+    fun saveUser(user: UserResponse, token: String) {
+        // Store user without token in JSON
+        val userWithoutToken = user.copy(token = "")
+        editor.putString(KEY_USER, gson.toJson(userWithoutToken))
+        editor.putString(KEY_TOKEN, token)
+        editor.putBoolean(KEY_IS_LOGGED_IN, true)
+        editor.apply()
+    }
+
+    fun getUser(): UserResponse? {
+        val userJson = sharedPreferences.getString(KEY_USER, null)
+        return if (userJson != null) {
+            gson.fromJson(userJson, UserResponse::class.java)
+        } else {
+            null
+        }
+    }
+
+    fun getToken(): String? {
+        return sharedPreferences.getString(KEY_TOKEN, null)
+    }
+
+    fun isLoggedIn(): Boolean {
+        return sharedPreferences.getBoolean(KEY_IS_LOGGED_IN, false)
+    }
+
+    fun clear() {
+        editor.clear()
+        editor.apply()
+    }
 }

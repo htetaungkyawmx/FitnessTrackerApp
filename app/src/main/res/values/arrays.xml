@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Activity types -->
+    <string-array name="activity_types">
+        <item>Running</item>
+        <item>Cycling</item>
+        <item>Weightlifting</item>
+        <item>Swimming</item>
+        <item>Yoga</item>
+        <item>Walking</item>
+        <item>Other</item>
+    </string-array>
+
+    <!-- Activity type values -->
+    <string-array name="activity_type_values">
+        <item>running</item>
+        <item>cycling</item>
+        <item>weightlifting</item>
+        <item>swimming</item>
+        <item>yoga</item>
+        <item>walking</item>
+        <item>other</item>
+    </string-array>
+
+    <!-- Gender options -->
+    <string-array name="gender_options">
+        <item>Male</item>
+        <item>Female</item>
+        <item>Other</item>
+        <item>Prefer not to say</item>
+    </string-array>
+
+    <!-- Fitness levels -->
+    <string-array name="fitness_levels">
+        <item>Beginner</item>
+        <item>Intermediate</item>
+        <item>Advanced</item>
+        <item>Professional</item>
+    </string-array>
+
+    <!-- Goal types -->
+    <string-array name="goal_types">
+        <item>Daily Steps</item>
+        <item>Weekly Exercise Minutes</item>
+        <item>Monthly Calories</item>
+        <item>Weight Loss</item>
+        <item>Distance Goal</item>
+    </string-array>
+
+    <!-- Goal units -->
+    <string-array name="goal_units">
+        <item>steps</item>
+        <item>minutes</item>
+        <item>calories</item>
+        <item>kg</item>
+        <item>km</item>
+    </string-array>
+
+    <!-- Duration options -->
+    <string-array name="duration_options">
+        <item>15 minutes</item>
+        <item>30 minutes</item>
+        <item>45 minutes</item>
+        <item>60 minutes</item>
+        <item>90 minutes</item>
+        <item>120 minutes</item>
+    </string-array>
+
+    <!-- Distance options -->
+    <string-array name="distance_options">
+        <item>1 km</item>
+        <item>3 km</item>
+        <item>5 km</item>
+        <item>10 km</item>
+        <item>21 km</item>
+        <item>42 km</item>
+    </string-array>
+
+    <!-- Sort options -->
+    <string-array name="sort_options">
+        <item>Date (Newest first)</item>
+        <item>Date (Oldest first)</item>
+        <item>Duration (Longest first)</item>
+        <item>Duration (Shortest first)</item>
+        <item>Calories (Highest first)</item>
+        <item>Calories (Lowest first)</item>
+    </string-array>
+
+    <!-- Filter options -->
+    <string-array name="filter_options">
+        <item>All Activities</item>
+        <item>Running</item>
+        <item>Cycling</item>
+        <item>Weightlifting</item>
+        <item>Swimming</item>
+        <item>Yoga</item>
+        <item>Walking</item>
+        <item>Other</item>
+    </string-array>
+
+    <!-- Time periods -->
+    <string-array name="time_periods">
+        <item>Today</item>
+        <item>Yesterday</item>
+        <item>This Week</item>
+        <item>This Month</item>
+        <item>Last Month</item>
+        <item>This Year</item>
+        <item>Custom Range</item>
+    </string-array>
+</resources>
