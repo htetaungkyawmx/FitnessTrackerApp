@@ -1,38 +1,43 @@
 <?php
 require_once 'config.php';
 
-$data = json_decode(file_get_contents("php://input"));
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    // Get JSON input
+    $input = json_decode(file_get_contents("php://input"), true);
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (empty($data->username) || empty($data->password)) {
-        echo json_encode(['success' => false, 'message' => 'Username and password are required']);
-        exit();
+    if (!$input) {
+        sendResponse(false, "Invalid input data");
     }
 
-    // Find user
-    $stmt = $pdo->prepare("SELECT id, username, email, password_hash FROM users WHERE username = ? OR email = ?");
-    $stmt->execute([$data->username, $data->username]);
-    $user = $stmt->fetch();
+    $email = validateInput($input['email'] ?? '');
+    $password = $input['password'] ?? '';
 
-    if (!$user || !password_verify($data->password, $user['password_hash'])) {
-        echo json_encode(['success' => false, 'message' => 'Invalid credentials']);
-        exit();
+    // Validation
+    if (empty($email) || empty($password)) {
+        sendResponse(false, "Email and password are required");
     }
 
-    // Generate new token
-    $token = bin2hex(random_bytes(32));
-    $tokenStmt = $pdo->prepare("INSERT INTO user_tokens (user_id, token, expires_at) VALUES (?, ?, DATE_ADD(NOW(), INTERVAL 7 DAY))");
-    $tokenStmt->execute([$user['id'], $token]);
+    // Get user from database
+    $stmt = $conn->prepare("SELECT id, name, email, password FROM users WHERE email = ?");
+    $stmt->bind_param("s", $email);
+    $stmt->execute();
+    $result = $stmt->get_result();
 
-    echo json_encode([
-        'success' => true,
-        'message' => 'Login successful',
-        'user' => [
-            'id' => $user['id'],
-            'username' => $user['username'],
-            'email' => $user['email']
-        ],
-        'token' => $token
-    ]);
+    if ($result->num_rows == 0) {
+        sendResponse(false, "User not found");
+    }
+
+    $user = $result->fetch_assoc();
+
+    // Verify password
+    if (password_verify($password, $user['password'])) {
+        // Remove password from response
+        unset($user['password']);
+        sendResponse(true, "Login successful", $user);
+    } else {
+        sendResponse(false, "Invalid password");
+    }
+} else {
+    sendResponse(false, "Invalid request method");
 }
 ?>

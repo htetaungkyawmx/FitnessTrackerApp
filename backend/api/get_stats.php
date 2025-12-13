@@ -1,61 +1,42 @@
 <?php
 require_once 'config.php';
 
-$userId = validateToken($pdo);
-if (!$userId) {
-    echo json_encode(['success' => false, 'message' => 'Unauthorized']);
-    exit();
+if ($_SERVER['REQUEST_METHOD'] == 'GET') {
+    $userId = $_GET['user_id'] ?? '';
+
+    if (empty($userId)) {
+        sendResponse(false, "User ID is required");
+    }
+
+    // Get today's date
+    $today = date('Y-m-d');
+
+    // Get total stats
+    $stmt = $conn->prepare("
+        SELECT
+            COUNT(*) as total_activities,
+            SUM(duration) as total_duration,
+            SUM(distance) as total_distance,
+            SUM(calories) as total_calories
+        FROM activities
+        WHERE user_id = ? AND DATE(date) = ?
+    ");
+    $stmt->bind_param("is", $userId, $today);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $stats = $result->fetch_assoc();
+
+    // Default values if no activities
+    $response = [
+        "steps" => rand(5000, 15000), // Simulated steps
+        "calories" => $stats['total_calories'] ?? 0,
+        "distance" => (float)($stats['total_distance'] ?? 0),
+        "duration" => $stats['total_duration'] ?? 0,
+        "total_activities" => $stats['total_activities'] ?? 0
+    ];
+
+    sendResponse(true, "Stats retrieved successfully", $response);
+} else {
+    sendResponse(false, "Invalid request method");
 }
-
-// Weekly activity summary
-$weeklyStmt = $pdo->prepare("
-    SELECT
-        DAYNAME(created_at) as day,
-        COUNT(*) as activity_count,
-        SUM(duration_minutes) as total_minutes,
-        SUM(calories_burned) as total_calories
-    FROM activities
-    WHERE user_id = ?
-    AND created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
-    GROUP BY DAY(created_at)
-    ORDER BY created_at DESC
-");
-
-$weeklyStmt->execute([$userId]);
-$weeklyStats = $weeklyStmt->fetchAll();
-
-// Activity type distribution
-$typeStmt = $pdo->prepare("
-    SELECT
-        activity_type,
-        COUNT(*) as count,
-        SUM(duration_minutes) as total_minutes
-    FROM activities
-    WHERE user_id = ?
-    GROUP BY activity_type
-");
-
-$typeStmt->execute([$userId]);
-$typeStats = $typeStmt->fetchAll();
-
-// Goals progress
-$goalsStmt = $pdo->prepare("
-    SELECT
-        goal_type,
-        target_value,
-        current_value,
-        ROUND((current_value / target_value) * 100, 2) as progress_percentage
-    FROM goals
-    WHERE user_id = ?
-");
-
-$goalsStmt->execute([$userId]);
-$goals = $goalsStmt->fetchAll();
-
-echo json_encode([
-    'success' => true,
-    'weekly_stats' => $weeklyStats,
-    'activity_types' => $typeStats,
-    'goals' => $goals
-]);
 ?>

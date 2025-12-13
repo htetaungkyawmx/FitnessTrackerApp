@@ -1,15 +1,39 @@
 package org.hak.fitnesstrackerapp.models
 
+import java.text.SimpleDateFormat
 import java.util.Date
+import java.util.Locale
 
 data class FitnessActivity(
     val id: Int = 0,
+    val userId: Int = 0,
     val type: String = "",
-    val duration: Int = 0, // in minutes
-    val distance: Double = 0.0, // in kilometers
+    val duration: Int = 0,
+    val distance: Double = 0.0,
     val calories: Int = 0,
-    val date: Date = Date(),
     val note: String = "",
-    val location: String? = null,
-    val steps: Int? = null
-)
+    val dateString: String = "",
+    val createdAt: String = ""
+) {
+    val date: Date
+        get() = parseDateString()
+
+    private fun parseDateString(): Date {
+        return try {
+            SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+                .parse(dateString) ?: Date()
+        } catch (e: Exception) {
+            Date()
+        }
+    }
+
+    fun getFormattedDate(): String {
+        return try {
+            val inputFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+            val outputFormat = SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault())
+            outputFormat.format(inputFormat.parse(dateString) ?: Date())
+        } catch (e: Exception) {
+            dateString
+        }
+    }
+}

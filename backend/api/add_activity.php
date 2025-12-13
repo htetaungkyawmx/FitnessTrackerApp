@@ -1,61 +1,48 @@
 <?php
 require_once 'config.php';
 
-$userId = validateToken($pdo);
-if (!$userId) {
-    echo json_encode(['success' => false, 'message' => 'Unauthorized']);
-    exit();
-}
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    // Get JSON input
+    $input = json_decode(file_get_contents("php://input"), true);
 
-$data = json_decode(file_get_contents("php://input"));
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $required = ['activity_type', 'duration_minutes'];
-    foreach ($required as $field) {
-        if (empty($data->$field)) {
-            echo json_encode(['success' => false, 'message' => "$field is required"]);
-            exit();
-        }
+    if (!$input) {
+        sendResponse(false, "Invalid input data");
     }
 
-    // Calculate calories if not provided
-    $calories = $data->calories_burned ?? calculateCalories($data->activity_type, $data->duration_minutes, $data->distance_km ?? 0);
+    $userId = validateInput($input['user_id'] ?? '');
+    $type = validateInput($input['type'] ?? '');
+    $duration = validateInput($input['duration'] ?? '');
+    $distance = validateInput($input['distance'] ?? '');
+    $calories = validateInput($input['calories'] ?? '');
+    $note = validateInput($input['note'] ?? '');
+    $date = validateInput($input['date'] ?? '');
 
-    $stmt = $pdo->prepare("
-        INSERT INTO activities (user_id, activity_type, duration_minutes, distance_km, calories_burned, notes)
-        VALUES (?, ?, ?, ?, ?, ?)
-    ");
+    // Validation
+    if (empty($userId) || empty($type) || empty($duration) || empty($calories) || empty($date)) {
+        sendResponse(false, "Required fields: user_id, type, duration, calories, date");
+    }
 
-    if ($stmt->execute([
-        $userId,
-        $data->activity_type,
-        $data->duration_minutes,
-        $data->distance_km ?? null,
-        $calories,
-        $data->notes ?? ''
-    ])) {
-        echo json_encode([
-            'success' => true,
-            'message' => 'Activity logged successfully',
-            'activity_id' => $pdo->lastInsertId()
-        ]);
+    // Check if user exists
+    $checkStmt = $conn->prepare("SELECT id FROM users WHERE id = ?");
+    $checkStmt->bind_param("i", $userId);
+    $checkStmt->execute();
+    $checkResult = $checkStmt->get_result();
+
+    if ($checkResult->num_rows == 0) {
+        sendResponse(false, "User not found");
+    }
+
+    // Insert activity
+    $stmt = $conn->prepare("INSERT INTO activities (user_id, type, duration, distance, calories, note, date) VALUES (?, ?, ?, ?, ?, ?, ?)");
+    $stmt->bind_param("isidiss", $userId, $type, $duration, $distance, $calories, $note, $date);
+
+    if ($stmt->execute()) {
+        $activityId = $stmt->insert_id;
+        sendResponse(true, "Activity added successfully", ["activity_id" => $activityId]);
     } else {
-        echo json_encode(['success' => false, 'message' => 'Failed to log activity']);
+        sendResponse(false, "Failed to add activity: " . $stmt->error);
     }
-}
-
-function calculateCalories($type, $duration, $distance) {
-    // Simple calorie calculation
-    $caloriesPerMinute = [
-        'running' => 10,
-        'cycling' => 8,
-        'weightlifting' => 5,
-        'swimming' => 7,
-        'yoga' => 3,
-        'walking' => 4
-    ];
-
-    $base = $caloriesPerMinute[$type] ?? 5;
-    return $base * $duration;
+} else {
+    sendResponse(false, "Invalid request method");
 }
 ?>

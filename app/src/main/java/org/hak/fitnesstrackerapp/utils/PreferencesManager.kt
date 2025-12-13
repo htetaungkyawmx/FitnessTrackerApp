@@ -11,6 +11,10 @@ class PreferencesManager(context: Context) {
         get() = sharedPreferences.getBoolean("is_logged_in", false)
         set(value) = sharedPreferences.edit().putBoolean("is_logged_in", value).apply()
 
+    var userId: Int
+        get() = sharedPreferences.getInt("user_id", -1)
+        set(value) = sharedPreferences.edit().putInt("user_id", value).apply()
+
     var userEmail: String
         get() = sharedPreferences.getString("user_email", "") ?: ""
         set(value) = sharedPreferences.edit().putString("user_email", value).apply()

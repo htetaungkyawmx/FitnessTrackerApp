@@ -1,49 +1,59 @@
 <?php
 require_once 'config.php';
 
-$data = json_decode(file_get_contents("php://input"));
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    // Get JSON input
+    $input = json_decode(file_get_contents("php://input"), true);
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (empty($data->username) || empty($data->email) || empty($data->password)) {
-        echo json_encode(['success' => false, 'message' => 'All fields are required']);
-        exit();
+    if (!$input) {
+        sendResponse(false, "Invalid input data");
+    }
+
+    $name = validateInput($input['name'] ?? '');
+    $email = validateInput($input['email'] ?? '');
+    $password = $input['password'] ?? '';
+
+    // Validation
+    if (empty($name) || empty($email) || empty($password)) {
+        sendResponse(false, "All fields are required");
+    }
+
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        sendResponse(false, "Invalid email format");
+    }
+
+    if (strlen($password) < 6) {
+        sendResponse(false, "Password must be at least 6 characters");
     }
 
     // Check if user exists
-    $checkStmt = $pdo->prepare("SELECT id FROM users WHERE username = ? OR email = ?");
-    $checkStmt->execute([$data->username, $data->email]);
+    $checkStmt = $conn->prepare("SELECT id FROM users WHERE email = ?");
+    $checkStmt->bind_param("s", $email);
+    $checkStmt->execute();
+    $checkResult = $checkStmt->get_result();
 
-    if ($checkStmt->rowCount() > 0) {
-        echo json_encode(['success' => false, 'message' => 'Username or email already exists']);
-        exit();
+    if ($checkResult->num_rows > 0) {
+        sendResponse(false, "Email already registered");
     }
 
     // Hash password
-    $hashedPassword = password_hash($data->password, PASSWORD_BCRYPT);
+    $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
     // Insert user
-    $stmt = $pdo->prepare("INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)");
+    $stmt = $conn->prepare("INSERT INTO users (name, email, password) VALUES (?, ?, ?)");
+    $stmt->bind_param("sss", $name, $email, $hashedPassword);
 
-    if ($stmt->execute([$data->username, $data->email, $hashedPassword])) {
-        $userId = $pdo->lastInsertId();
-
-        // Generate token
-        $token = bin2hex(random_bytes(32));
-        $tokenStmt = $pdo->prepare("INSERT INTO user_tokens (user_id, token, expires_at) VALUES (?, ?, DATE_ADD(NOW(), INTERVAL 7 DAY))");
-        $tokenStmt->execute([$userId, $token]);
-
-        echo json_encode([
-            'success' => true,
-            'message' => 'Registration successful',
-            'user' => [
-                'id' => $userId,
-                'username' => $data->username,
-                'email' => $data->email
-            ],
-            'token' => $token
+    if ($stmt->execute()) {
+        $userId = $stmt->insert_id;
+        sendResponse(true, "Registration successful", [
+            "user_id" => $userId,
+            "name" => $name,
+            "email" => $email
         ]);
     } else {
-        echo json_encode(['success' => false, 'message' => 'Registration failed']);
+        sendResponse(false, "Registration failed: " . $stmt->error);
     }
+} else {
+    sendResponse(false, "Invalid request method");
 }
 ?>

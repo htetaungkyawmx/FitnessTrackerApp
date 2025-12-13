@@ -1,47 +1,36 @@
 <?php
 require_once 'config.php';
 
-$userId = validateToken($pdo);
-if (!$userId) {
-    echo json_encode(['success' => false, 'message' => 'Unauthorized']);
-    exit();
+if ($_SERVER['REQUEST_METHOD'] == 'GET') {
+    $userId = $_GET['user_id'] ?? '';
+
+    if (empty($userId)) {
+        sendResponse(false, "User ID is required");
+    }
+
+    // Get activities for user
+    $stmt = $conn->prepare("SELECT * FROM activities WHERE user_id = ? ORDER BY date DESC");
+    $stmt->bind_param("i", $userId);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    $activities = [];
+    while ($row = $result->fetch_assoc()) {
+        $activities[] = [
+            "id" => $row['id'],
+            "user_id" => $row['user_id'],
+            "type" => $row['type'],
+            "duration" => $row['duration'],
+            "distance" => (float)$row['distance'],
+            "calories" => $row['calories'],
+            "note" => $row['note'],
+            "date" => $row['date'],
+            "created_at" => $row['created_at']
+        ];
+    }
+
+    sendResponse(true, "Activities retrieved successfully", $activities);
+} else {
+    sendResponse(false, "Invalid request method");
 }
-
-$stmt = $pdo->prepare("
-    SELECT a.*,
-           DATE_FORMAT(a.created_at, '%Y-%m-%d %H:%i:%s') as formatted_date,
-           CASE
-               WHEN a.activity_type = 'running' THEN '🏃 Running'
-               WHEN a.activity_type = 'cycling' THEN '🚴 Cycling'
-               WHEN a.activity_type = 'weightlifting' THEN '🏋️ Weightlifting'
-               ELSE a.activity_type
-           END as display_name
-    FROM activities a
-    WHERE a.user_id = ?
-    ORDER BY a.created_at DESC
-    LIMIT 50
-");
-
-$stmt->execute([$userId]);
-$activities = $stmt->fetchAll();
-
-// Get statistics
-$statsStmt = $pdo->prepare("
-    SELECT
-        COUNT(*) as total_activities,
-        SUM(duration_minutes) as total_minutes,
-        SUM(calories_burned) as total_calories,
-        AVG(duration_minutes) as avg_duration
-    FROM activities
-    WHERE user_id = ?
-");
-
-$statsStmt->execute([$userId]);
-$stats = $statsStmt->fetch();
-
-echo json_encode([
-    'success' => true,
-    'activities' => $activities,
-    'statistics' => $stats
-]);
 ?>

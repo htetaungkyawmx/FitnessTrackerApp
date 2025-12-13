@@ -1,38 +1,30 @@
 <?php
 require_once 'config.php';
 
-$userId = validateToken($pdo);
-if (!$userId) {
-    echo json_encode(['success' => false, 'message' => 'Unauthorized']);
-    exit();
-}
+if ($_SERVER['REQUEST_METHOD'] == 'DELETE') {
+    // Get JSON input
+    $input = json_decode(file_get_contents("php://input"), true);
 
-$data = json_decode(file_get_contents("php://input"));
-
-if ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
-    if (empty($data->activity_id)) {
-        echo json_encode(['success' => false, 'message' => 'Activity ID is required']);
-        exit();
+    if (!$input) {
+        sendResponse(false, "Invalid input data");
     }
 
-    // Verify the activity belongs to the user
-    $checkStmt = $pdo->prepare("SELECT id FROM activities WHERE id = ? AND user_id = ?");
-    $checkStmt->execute([$data->activity_id, $userId]);
+    $activityId = validateInput($input['id'] ?? '');
 
-    if ($checkStmt->rowCount() === 0) {
-        echo json_encode(['success' => false, 'message' => 'Activity not found or unauthorized']);
-        exit();
+    if (empty($activityId)) {
+        sendResponse(false, "Activity ID is required");
     }
 
-    $stmt = $pdo->prepare("DELETE FROM activities WHERE id = ?");
+    // Delete activity
+    $stmt = $conn->prepare("DELETE FROM activities WHERE id = ?");
+    $stmt->bind_param("i", $activityId);
 
-    if ($stmt->execute([$data->activity_id])) {
-        echo json_encode([
-            'success' => true,
-            'message' => 'Activity deleted successfully'
-        ]);
+    if ($stmt->execute()) {
+        sendResponse(true, "Activity deleted successfully");
     } else {
-        echo json_encode(['success' => false, 'message' => 'Failed to delete activity']);
+        sendResponse(false, "Failed to delete activity: " . $stmt->error);
     }
+} else {
+    sendResponse(false, "Invalid request method");
 }
 ?>

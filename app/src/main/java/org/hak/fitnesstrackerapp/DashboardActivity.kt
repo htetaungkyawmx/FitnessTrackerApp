@@ -7,19 +7,21 @@ import android.view.MenuItem
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.hak.fitnesstrackerapp.adapters.ActivityAdapter
 import org.hak.fitnesstrackerapp.databinding.ActivityDashboardBinding
-import org.hak.fitnesstrackerapp.models.DashboardStats
-import org.hak.fitnesstrackerapp.models.FitnessActivity
+import org.hak.fitnesstrackerapp.network.RetrofitClient
 import org.hak.fitnesstrackerapp.utils.PreferencesManager
-import java.text.SimpleDateFormat
-import java.util.*
+import retrofit2.Response
 
 class DashboardActivity : AppCompatActivity() {
     private lateinit var binding: ActivityDashboardBinding
     private lateinit var activityAdapter: ActivityAdapter
     private lateinit var preferencesManager: PreferencesManager
-    private val activities = mutableListOf<FitnessActivity>()
+    private val apiService = RetrofitClient.instance
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -27,6 +29,13 @@ class DashboardActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         preferencesManager = PreferencesManager(this)
+
+        // Check if user is logged in
+        if (!preferencesManager.isLoggedIn || preferencesManager.userId == -1) {
+            startActivity(Intent(this, LoginActivity::class.java))
+            finish()
+            return
+        }
 
         setupToolbar()
         setupRecyclerView()
@@ -40,7 +49,7 @@ class DashboardActivity : AppCompatActivity() {
     }
 
     private fun setupRecyclerView() {
-        activityAdapter = ActivityAdapter(activities) { activity ->
+        activityAdapter = ActivityAdapter(emptyList()) { activity ->
             Toast.makeText(this, "Selected: ${activity.type}", Toast.LENGTH_SHORT).show()
         }
 
@@ -80,69 +89,61 @@ class DashboardActivity : AppCompatActivity() {
             binding.tvWelcome.text = "Welcome, $userName!"
         }
 
-        val stats = DashboardStats(
-            steps = 8452,
-            calories = 420,
-            distance = 6.8,
-            duration = 65
-        )
-
-        updateStats(stats)
+        loadStats()
         loadRecentActivities()
     }
 
-    private fun updateStats(stats: DashboardStats) {
+    private fun loadStats() {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val response = apiService.getStats(preferencesManager.userId)
+
+                withContext(Dispatchers.Main) {
+                    if (response.isSuccessful) {
+                        val stats = response.body()
+                        if (stats != null) {
+                            updateStats(stats)
+                        }
+                    } else {
+                        Toast.makeText(this@DashboardActivity, "Failed to load stats", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(this@DashboardActivity, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
+    private fun loadRecentActivities() {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val response = apiService.getActivities(preferencesManager.userId)
+
+                withContext(Dispatchers.Main) {
+                    if (response.isSuccessful) {
+                        val activities = response.body()
+                        if (activities != null && activities.isNotEmpty()) {
+                            // Show only recent 3 activities
+                            val recentActivities = activities.take(3)
+                            activityAdapter.updateActivities(recentActivities)
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(this@DashboardActivity, "Error loading activities", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
+    private fun updateStats(stats: org.hak.fitnesstrackerapp.models.DashboardStats) {
         binding.tvStepsCount.text = stats.steps.toString()
         binding.tvCaloriesCount.text = "${stats.calories} cal"
         binding.tvDistanceCount.text = String.format("%.1f km", stats.distance)
         binding.tvDurationCount.text = "${stats.duration} min"
-    }
-
-    private fun loadRecentActivities() {
-        activities.clear()
-        activities.addAll(generateSampleActivities())
-        activityAdapter.notifyDataSetChanged()
-    }
-
-    private fun generateSampleActivities(): List<FitnessActivity> {
-        val dateFormat = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
-        val calendar = Calendar.getInstance()
-
-        return listOf(
-            FitnessActivity(
-                id = 1,
-                type = "Running",
-                duration = 45,
-                distance = 5.2,
-                calories = 320,
-                date = calendar.time,
-                note = "Morning run in the park"
-            ),
-            FitnessActivity(
-                id = 2,
-                type = "Cycling",
-                duration = 60,
-                distance = 15.5,
-                calories = 450,
-                date = {
-                    calendar.add(Calendar.DAY_OF_YEAR, -1)
-                    calendar.time
-                }(),
-                note = "Evening cycling session"
-            ),
-            FitnessActivity(
-                id = 3,
-                type = "Walking",
-                duration = 30,
-                distance = 2.5,
-                calories = 150,
-                date = {
-                    calendar.add(Calendar.DAY_OF_YEAR, -2)
-                    calendar.time
-                }(),
-                note = "Walk with friends"
-            )
-        )
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -167,7 +168,7 @@ class DashboardActivity : AppCompatActivity() {
             }
             R.id.menu_logout -> {
                 preferencesManager.clear()
-                startActivity(Intent(this, MainActivity::class.java))
+                startActivity(Intent(this, LoginActivity::class.java))
                 finish()
                 true
             }

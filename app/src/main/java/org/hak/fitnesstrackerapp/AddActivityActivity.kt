@@ -6,17 +6,32 @@ import android.os.Bundle
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.hak.fitnesstrackerapp.databinding.ActivityAddActivityBinding
-import java.util.Calendar
+import org.hak.fitnesstrackerapp.network.ActivityRequest
+import org.hak.fitnesstrackerapp.network.ApiResponse
+import org.hak.fitnesstrackerapp.network.RetrofitClient
+import org.hak.fitnesstrackerapp.utils.PreferencesManager
+import retrofit2.Response
+import java.text.SimpleDateFormat
+import java.util.*
 
 class AddActivityActivity : AppCompatActivity() {
     private lateinit var binding: ActivityAddActivityBinding
+    private lateinit var preferencesManager: PreferencesManager
+    private val apiService = RetrofitClient.instance  // ✅ Add this line
     private val calendar = Calendar.getInstance()
+    private val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityAddActivityBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        preferencesManager = PreferencesManager(this)
 
         setupToolbar()
         setupSpinner()
@@ -114,8 +129,52 @@ class AddActivityActivity : AppCompatActivity() {
         val calories = binding.etCalories.text.toString().toIntOrNull() ?: 0
         val note = binding.etNote.text.toString()
 
-        // Here you would save to database or API
-        Toast.makeText(this, "Activity saved successfully!", Toast.LENGTH_SHORT).show()
-        finish()
+        // Format date for API
+        val formattedDate = dateFormat.format(calendar.time)
+
+        val activityRequest = ActivityRequest(
+            user_id = preferencesManager.userId,
+            type = type,
+            duration = duration,
+            distance = distance,
+            calories = calories,
+            note = note,
+            date = formattedDate
+        )
+
+        binding.btnSave.isEnabled = false
+        binding.btnSave.text = "Saving..."
+
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val response = apiService.addActivity(activityRequest)
+
+                withContext(Dispatchers.Main) {
+                    handleSaveResponse(response)
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(this@AddActivityActivity, "Network error: ${e.message}", Toast.LENGTH_SHORT).show()
+                    binding.btnSave.isEnabled = true
+                    binding.btnSave.text = "Save Activity"
+                }
+            }
+        }
+    }
+
+    private fun handleSaveResponse(response: Response<ApiResponse>) {
+        if (response.isSuccessful) {
+            val apiResponse = response.body()
+            if (apiResponse?.success == true) {
+                Toast.makeText(this, "Activity saved successfully!", Toast.LENGTH_SHORT).show()
+                finish()
+            } else {
+                Toast.makeText(this, apiResponse?.message ?: "Failed to save activity", Toast.LENGTH_SHORT).show()
+            }
+        } else {
+            Toast.makeText(this, "Server error: ${response.code()}", Toast.LENGTH_SHORT).show()
+        }
+        binding.btnSave.isEnabled = true
+        binding.btnSave.text = "Save Activity"
     }
 }

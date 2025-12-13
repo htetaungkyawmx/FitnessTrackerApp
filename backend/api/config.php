@@ -4,32 +4,47 @@ header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 
-$host = 'localhost';
-$dbname = 'fitness_tracker';
-$username = 'root';
-$password = '';
+// Database configuration
+$host = "localhost";
+$username = "root";
+$password = "";
+$database = "fitness_tracker";
 
-try {
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $username, $password);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
-} catch (PDOException $e) {
+// Create connection
+$conn = new mysqli($host, $username, $password, $database);
+
+// Check connection
+if ($conn->connect_error) {
     http_response_code(500);
-    echo json_encode(['success' => false, 'message' => 'Database connection failed: ' . $e->getMessage()]);
+    echo json_encode([
+        "success" => false,
+        "message" => "Database connection failed: " . $conn->connect_error
+    ]);
     exit();
 }
 
-function validateToken($pdo) {
-    $headers = getallheaders();
-    if (!isset($headers['Authorization'])) {
-        return null;
-    }
+// Helper function to validate input
+function validateInput($data) {
+    $data = trim($data);
+    $data = stripslashes($data);
+    $data = htmlspecialchars($data);
+    return $data;
+}
 
-    $token = str_replace('Bearer ', '', $headers['Authorization']);
-    $stmt = $pdo->prepare("SELECT user_id FROM user_tokens WHERE token = ? AND expires_at > NOW()");
-    $stmt->execute([$token]);
-    $result = $stmt->fetch();
+// Helper function to send JSON response
+function sendResponse($success, $message, $data = null) {
+    http_response_code($success ? 200 : 400);
+    echo json_encode([
+        "success" => $success,
+        "message" => $message,
+        "data" => $data
+    ]);
+    exit();
+}
 
-    return $result ? $result['user_id'] : null;
+// Handle OPTIONS request for CORS
+if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+    http_response_code(200);
+    exit();
 }
 ?>
