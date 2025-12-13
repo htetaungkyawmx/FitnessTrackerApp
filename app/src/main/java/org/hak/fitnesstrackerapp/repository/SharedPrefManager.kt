@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.SharedPreferences
 import com.google.gson.Gson
 import org.hak.fitnesstrackerapp.network.models.AuthResponse
-import org.hak.fitnesstrackerapp.network.models.UserResponse
 
 class SharedPrefManager private constructor(context: Context) {
 
@@ -13,7 +12,9 @@ class SharedPrefManager private constructor(context: Context) {
         private const val KEY_IS_LOGGED_IN = "isLoggedIn"
         private const val KEY_USER = "user"
         private const val KEY_TOKEN = "token"
-        private const val KEY_DAILY_REMINDER = "daily_reminder"
+        private const val KEY_USER_ID = "user_id"
+        private const val KEY_USERNAME = "username"
+        private const val KEY_EMAIL = "email"
 
         @Volatile
         private var INSTANCE: SharedPrefManager? = null
@@ -32,18 +33,26 @@ class SharedPrefManager private constructor(context: Context) {
     private val editor: SharedPreferences.Editor = sharedPreferences.edit()
     private val gson = Gson()
 
-    // User methods
-    fun saveUser(user: AuthResponse) {
-        editor.putString(KEY_USER, gson.toJson(user))
-        editor.putString(KEY_TOKEN, user.token)
+    fun saveAuthData(authResponse: AuthResponse) {
+        authResponse.user?.let { user ->
+            editor.putInt(KEY_USER_ID, user.id)
+            editor.putString(KEY_USERNAME, user.username)
+            editor.putString(KEY_EMAIL, user.email)
+            editor.putString(KEY_USER, gson.toJson(user))
+        }
+
+        authResponse.token?.let { token ->
+            editor.putString(KEY_TOKEN, token)
+        }
+
         editor.putBoolean(KEY_IS_LOGGED_IN, true)
         editor.apply()
     }
 
-    fun getUser(): UserResponse? {
+    fun getUser(): org.hak.fitnesstrackerapp.network.models.UserResponse? {
         val userJson = sharedPreferences.getString(KEY_USER, null)
         return if (userJson != null) {
-            gson.fromJson(userJson, UserResponse::class.java)
+            gson.fromJson(userJson, org.hak.fitnesstrackerapp.network.models.UserResponse::class.java)
         } else {
             null
         }
@@ -53,23 +62,33 @@ class SharedPrefManager private constructor(context: Context) {
         return sharedPreferences.getString(KEY_TOKEN, null)
     }
 
+    fun getUserId(): Int {
+        return sharedPreferences.getInt(KEY_USER_ID, -1)
+    }
+
+    fun getUsername(): String? {
+        return sharedPreferences.getString(KEY_USERNAME, null)
+    }
+
+    fun getEmail(): String? {
+        return sharedPreferences.getString(KEY_EMAIL, null)
+    }
+
     fun isLoggedIn(): Boolean {
         return sharedPreferences.getBoolean(KEY_IS_LOGGED_IN, false)
     }
 
-    // Daily reminder methods
-    fun getDailyReminderEnabled(): Boolean {
-        return sharedPreferences.getBoolean(KEY_DAILY_REMINDER, true) // Default to true
-    }
-
-    fun setDailyReminderEnabled(enabled: Boolean) {
-        editor.putBoolean(KEY_DAILY_REMINDER, enabled)
-        editor.apply()
-    }
-
-    // Clear all data
     fun clear() {
         editor.clear()
         editor.apply()
+    }
+
+    fun saveDailyReminderEnabled(enabled: Boolean) {
+        editor.putBoolean("daily_reminder", enabled)
+        editor.apply()
+    }
+
+    fun getDailyReminderEnabled(): Boolean {
+        return sharedPreferences.getBoolean("daily_reminder", false)
     }
 }

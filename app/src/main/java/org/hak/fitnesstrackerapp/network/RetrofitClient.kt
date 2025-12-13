@@ -2,14 +2,15 @@ package org.hak.fitnesstrackerapp.network
 
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
+import okhttp3.Request
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
 object RetrofitClient {
-//    private const val BASE_URL = "http://10.0.2.2/fitness_api/api/" // For emulator
-    private const val BASE_URL = "http://192.168.202.112/fitness_api/api/" // For real device
+    private const val BASE_URL = "http://10.0.2.2/fitness_api/api/" // For emulator
+    // For real device: "http://192.168.x.x/fitness_api/api/"
 
     private lateinit var retrofit: Retrofit
     private var authToken: String? = null
@@ -63,5 +64,13 @@ object RetrofitClient {
 
     fun clearAuthToken() {
         authToken = null
+    }
+
+    fun hasAuthToken(): Boolean {
+        return authToken != null
+    }
+
+    fun getAuthToken(): String? {
+        return authToken
     }
 }

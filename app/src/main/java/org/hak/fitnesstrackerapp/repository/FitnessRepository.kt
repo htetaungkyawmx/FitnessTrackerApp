@@ -8,7 +8,12 @@ import org.hak.fitnesstrackerapp.network.models.*
 class FitnessRepository {
     private val apiService = RetrofitClient.getApiService()
 
-    suspend fun register(username: String, email: String, password: String, confirmPassword: String): Result<AuthResponse> {
+    suspend fun register(
+        username: String,
+        email: String,
+        password: String,
+        confirmPassword: String
+    ): Result<AuthResponse> {
         return withContext(Dispatchers.IO) {
             try {
                 val response = apiService.register(
@@ -16,10 +21,14 @@ class FitnessRepository {
                         username = username,
                         email = email,
                         password = password,
-                        confirmPassword = password
+                        confirmPassword = confirmPassword
                     )
                 )
                 if (response.success && response.data != null) {
+                    // Store token if available
+                    response.data.token?.let { token ->
+                        RetrofitClient.setAuthToken(token)
+                    }
                     Result.success(response.data)
                 } else {
                     Result.failure(Exception(response.message ?: "Registration failed"))
@@ -38,7 +47,9 @@ class FitnessRepository {
                 )
                 if (response.success && response.data != null) {
                     // Set auth token for future requests
-                    RetrofitClient.setAuthToken(response.data.token)
+                    response.data.token?.let { token ->
+                        RetrofitClient.setAuthToken(token)
+                    }
                     Result.success(response.data)
                 } else {
                     Result.failure(Exception(response.message ?: "Login failed"))
@@ -97,7 +108,7 @@ class FitnessRepository {
         return withContext(Dispatchers.IO) {
             try {
                 val response = apiService.deleteActivity(
-                    DeleteActivityRequest(activityId)
+                    DeleteActivityRequest(activityId = activityId)
                 )
                 if (response.success) {
                     Result.success(Unit)
@@ -145,7 +156,7 @@ class FitnessRepository {
         }
     }
 
-    suspend fun getUserProfile(): Result<ProfileResponse> {
+    suspend fun getUserProfile(): Result<UserProfileResponse> {
         return withContext(Dispatchers.IO) {
             try {
                 val response = apiService.getUserProfile()
@@ -161,14 +172,18 @@ class FitnessRepository {
     }
 
     suspend fun updateProfile(
-        heightCm: UpdateProfileRequest = null,
+        heightCm: Double? = null,
         weightKg: Double? = null,
         birthDate: String? = null
     ): Result<UserProfileResponse> {
         return withContext(Dispatchers.IO) {
             try {
                 val response = apiService.updateProfile(
-                    UpdateProfileRequest(heightCm, weightKg, birthDate)
+                    UpdateProfileRequest(
+                        heightCm = heightCm,
+                        weightKg = weightKg,
+                        birthDate = birthDate
+                    )
                 )
                 if (response.success && response.data != null) {
                     Result.success(response.data)
@@ -190,7 +205,12 @@ class FitnessRepository {
         return withContext(Dispatchers.IO) {
             try {
                 val response = apiService.setGoal(
-                    GoalRequest(goalType, targetValue, currentValue, deadline)
+                    GoalRequest(
+                        goalType = goalType,
+                        targetValue = targetValue,
+                        currentValue = currentValue,
+                        deadline = deadline
+                    )
                 )
                 if (response.success) {
                     Result.success(Unit)
@@ -211,7 +231,11 @@ class FitnessRepository {
         return withContext(Dispatchers.IO) {
             try {
                 val response = apiService.changePassword(
-                    ChangePasswordRequest(currentPassword, newPassword, confirmPassword)
+                    ChangePasswordRequest(
+                        currentPassword = currentPassword,
+                        newPassword = newPassword,
+                        confirmPassword = confirmPassword
+                    )
                 )
                 if (response.success) {
                     Result.success(Unit)
@@ -241,5 +265,10 @@ class FitnessRepository {
 
     fun logout() {
         RetrofitClient.clearAuthToken()
+    }
+
+    // Helper function to check if user is authenticated
+    fun isAuthenticated(): Boolean {
+        return RetrofitClient.hasAuthToken()
     }
 }
