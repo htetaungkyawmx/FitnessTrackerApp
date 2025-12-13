@@ -34,13 +34,27 @@ class ProfileActivity : AppCompatActivity() {
 
     private fun initViews() {
         // Set sample data
-        binding.tvUsername.text = "John Doe"
-        binding.tvEmail.text = "john@example.com"
-        binding.tvMemberSince.text = "Member since: 2024-01-01"
+        binding.textViewUsername.text = "John Doe"
+        binding.textViewEmail.text = "john@example.com"
+        binding.textViewMemberSince.text = "Member since: 2024-01-01"
 
-        binding.swipeRefresh.setOnRefreshListener {
-            binding.swipeRefresh.isRefreshing = false
+        // Profile information
+        binding.textViewHeight.text = "175 cm"
+        binding.textViewWeight.text = "70 kg"
+        binding.textViewBirthDate.text = "1990-05-15"
+
+        // Statistics
+        binding.textViewTotalActivities.text = "25"
+        binding.textViewTotalMinutes.text = "1,250"
+        binding.textViewTotalCalories.text = "12,500"
+
+        binding.swipeRefreshLayout.setOnRefreshListener {
+            binding.swipeRefreshLayout.isRefreshing = false
             Toast.makeText(this, "Profile refreshed!", Toast.LENGTH_SHORT).show()
+        }
+
+        binding.buttonLogout.setOnClickListener {
+            logout()
         }
     }
 
@@ -53,10 +67,6 @@ class ProfileActivity : AppCompatActivity() {
         return when (item.itemId) {
             R.id.action_edit -> {
                 Toast.makeText(this, "Edit profile feature coming soon!", Toast.LENGTH_SHORT).show()
-                true
-            }
-            R.id.action_logout -> {
-                logout()
                 true
             }
             else -> super.onOptionsItemSelected(item)

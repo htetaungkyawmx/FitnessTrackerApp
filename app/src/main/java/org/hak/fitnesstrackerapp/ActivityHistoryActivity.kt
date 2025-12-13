@@ -5,34 +5,33 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.ArrayAdapter
+import android.widget.EditText
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
+import org.hak.fitnesstrackerapp.adapter.ActivityAdapter
 import org.hak.fitnesstrackerapp.databinding.ActivityHistoryBinding
-import org.hak.fitnesstrackerapp.databinding.DialogFilterBinding
-import org.hak.fitnesstrackerapp.network.models.Activity
-import org.hak.fitnesstrackerapp.network.models.Statistics
-import org.hak.fitnesstrackerapp.viewmodel.ActivityViewModel
+import org.hak.fitnesstrackerapp.model.Activity
+import org.hak.fitnesstrackerapp.model.ActivityType
 import java.util.*
 
 class ActivityHistoryActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityHistoryBinding
-    private lateinit var viewModel: ActivityViewModel
+    private lateinit var adapter: ActivityAdapter
+    private var currentType: String? = null
+    private var currentDateFrom: String? = null
+    private var currentDateTo: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityHistoryBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Initialize ViewModel without Hilt
-        viewModel = ViewModelProvider(this).get(ActivityViewModel::class.java)
-
         setupToolbar()
         initViews()
-        setupObservers()
-        loadActivities()
+        loadSampleActivities()
     }
 
     private fun setupToolbar() {
@@ -66,55 +65,65 @@ class ActivityHistoryActivity : AppCompatActivity() {
     }
 
     private fun initViews() {
-        // For now, create a simple adapter or comment out
-        // adapter = ActivityHistoryAdapter { activity ->
-        //     showDeleteConfirmationDialog(activity.id)
-        // }
+        adapter = ActivityAdapter { activity ->
+            showDeleteConfirmationDialog(activity.id)
+        }
 
         binding.rvActivities.layoutManager = LinearLayoutManager(this)
-        // binding.rvActivities.adapter = adapter
+        binding.rvActivities.adapter = adapter
 
         binding.swipeRefresh.setOnRefreshListener {
-            loadActivities()
+            loadSampleActivities()
         }
 
         binding.fabAddActivity.setOnClickListener {
-            // Navigate to add activity
+            Toast.makeText(this, "Add Activity feature coming soon!", Toast.LENGTH_SHORT).show()
         }
     }
 
-    private fun setupObservers() {
-        // Comment out for now
-        /*
-        viewModel.activitiesState.observe(this, Observer { state ->
-            binding.swipeRefresh.isRefreshing = false
+    private fun loadSampleActivities() {
+        // Create sample activities for testing
+        val sampleActivities = listOf(
+            Activity(
+                id = 1,
+                userId = 1,
+                type = ActivityType.Running,
+                durationMinutes = 30,
+                distanceKm = 5.0,
+                caloriesBurned = 300,
+                notes = "Morning run in central park",
+                createdAt = Date(),
+                location = null
+            ),
+            Activity(
+                id = 2,
+                userId = 1,
+                type = ActivityType.Weightlifting,
+                durationMinutes = 60,
+                distanceKm = null,
+                caloriesBurned = 250,
+                notes = "Chest and triceps workout",
+                createdAt = Date(System.currentTimeMillis() - 86400000), // Yesterday
+                location = null
+            ),
+            Activity(
+                id = 3,
+                userId = 1,
+                type = ActivityType.Cycling,
+                durationMinutes = 45,
+                distanceKm = 15.0,
+                caloriesBurned = 400,
+                notes = null,
+                createdAt = Date(System.currentTimeMillis() - 172800000), // 2 days ago
+                location = null
+            )
+        )
 
-            when (state) {
-                is ActivitiesState.Loading -> {
-                    showLoading(true)
-                }
-                is ActivitiesState.Success -> {
-                    showLoading(false)
-                    updateActivitiesList(state.response.activities)
-                    updateStatistics(state.response.statistics)
-                }
-                is ActivitiesState.Error -> {
-                    showLoading(false)
-                    Toast.makeText(this, state.message, Toast.LENGTH_SHORT).show()
-                }
-            }
-        })
-        */
-    }
+        adapter.submitList(sampleActivities)
+        updateStatistics(sampleActivities)
+        binding.swipeRefresh.isRefreshing = false
 
-    private fun loadActivities() {
-        // viewModel.loadActivities()
-    }
-
-    private fun updateActivitiesList(activities: List<Activity>) {
-        // adapter.submitList(activities)
-
-        if (activities.isEmpty()) {
+        if (sampleActivities.isEmpty()) {
             binding.tvEmpty.visibility = android.view.View.VISIBLE
             binding.rvActivities.visibility = android.view.View.GONE
         } else {
@@ -123,14 +132,24 @@ class ActivityHistoryActivity : AppCompatActivity() {
         }
     }
 
-    private fun updateStatistics(statistics: Statistics) {
-        binding.tvTotalActivities.text = "Total Activities: ${statistics.total_activities}"
-        binding.tvTotalMinutes.text = "Total Minutes: ${statistics.total_minutes}"
-        binding.tvTotalCalories.text = "Total Calories: ${statistics.total_calories}"
+    private fun updateStatistics(activities: List<Activity>) {
+        val totalActivities = activities.size
+        val totalMinutes = activities.sumOf { it.durationMinutes }
+        val totalCalories = activities.sumOf { it.calories }
+        val totalDistance = activities.sumOf { it.distanceKm ?: 0.0 }
+
+        binding.tvTotalActivities.text = "Total Activities: $totalActivities"
+        binding.tvTotalMinutes.text = "Total Minutes: $totalMinutes"
+        binding.tvTotalCalories.text = "Total Calories: $totalCalories"
+        binding.tvTotalDistance.text = String.format("Total Distance: %.2f km", totalDistance)
     }
 
     private fun showFilterDialog() {
-        val dialogBinding = DialogFilterBinding.inflate(layoutInflater)
+        // Create custom dialog layout programmatically
+        val dialogView = layoutInflater.inflate(R.layout.dialog_filter, null)
+        val spinnerType = dialogView.findViewById<android.widget.Spinner>(R.id.spinnerType)
+        val etDateFrom = dialogView.findViewById<EditText>(R.id.etDateFrom)
+        val etDateTo = dialogView.findViewById<EditText>(R.id.etDateTo)
 
         val activityTypes = listOf(
             "All", "Running", "Cycling", "Weightlifting", "Swimming", "Yoga", "Walking", "Other"
@@ -138,35 +157,36 @@ class ActivityHistoryActivity : AppCompatActivity() {
 
         val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, activityTypes)
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        dialogBinding.spinnerType.adapter = adapter
+        spinnerType.adapter = adapter
 
-        dialogBinding.etDateFrom.setOnClickListener {
-            showDatePicker(dialogBinding.etDateFrom)
+        etDateFrom.setOnClickListener {
+            showDatePicker(etDateFrom)
         }
 
-        dialogBinding.etDateTo.setOnClickListener {
-            showDatePicker(dialogBinding.etDateTo)
+        etDateTo.setOnClickListener {
+            showDatePicker(etDateTo)
         }
 
         AlertDialog.Builder(this)
             .setTitle("Filter Activities")
-            .setView(dialogBinding.root)
+            .setView(dialogView)
             .setPositiveButton("Apply") { _, _ ->
-                val type = if (dialogBinding.spinnerType.selectedItemPosition > 0) {
-                    dialogBinding.spinnerType.selectedItem.toString().lowercase()
+                val type = if (spinnerType.selectedItemPosition > 0) {
+                    spinnerType.selectedItem.toString().lowercase()
                 } else null
 
-                // currentType = type
-                // currentDateFrom = dialogBinding.etDateFrom.text.toString().takeIf { it.isNotEmpty() }
-                // currentDateTo = dialogBinding.etDateTo.text.toString().takeIf { it.isNotEmpty() }
+                currentType = type
+                currentDateFrom = etDateFrom.text.toString().takeIf { it.isNotEmpty() }
+                currentDateTo = etDateTo.text.toString().takeIf { it.isNotEmpty() }
 
-                // applyFilters()
+                applyFilters()
+                Toast.makeText(this, "Filters applied!", Toast.LENGTH_SHORT).show()
             }
             .setNegativeButton("Cancel", null)
             .show()
     }
 
-    private fun showDatePicker(editText: android.widget.EditText) {
+    private fun showDatePicker(editText: EditText) {
         val calendar = Calendar.getInstance()
         DatePickerDialog(
             this,
@@ -181,14 +201,16 @@ class ActivityHistoryActivity : AppCompatActivity() {
     }
 
     private fun applyFilters() {
-        // viewModel.searchActivities(currentType, currentDateFrom, currentDateTo)
+        loadSampleActivities()
+        Toast.makeText(this, "Filter: $currentType, From: $currentDateFrom, To: $currentDateTo", Toast.LENGTH_SHORT).show()
     }
 
     private fun clearFilters() {
-        // currentType = null
-        // currentDateFrom = null
-        // currentDateTo = null
-        loadActivities()
+        currentType = null
+        currentDateFrom = null
+        currentDateTo = null
+        loadSampleActivities()
+        Toast.makeText(this, "Filters cleared!", Toast.LENGTH_SHORT).show()
     }
 
     private fun showDeleteConfirmationDialog(activityId: Int) {
@@ -196,13 +218,13 @@ class ActivityHistoryActivity : AppCompatActivity() {
             .setTitle("Delete Activity")
             .setMessage("Are you sure you want to delete this activity?")
             .setPositiveButton("Delete") { _, _ ->
-                // viewModel.deleteActivity(activityId)
+                // Remove activity from list
+                val newList = adapter.currentList.filter { it.id != activityId }
+                adapter.submitList(newList)
+                updateStatistics(newList)
+                Toast.makeText(this, "Activity deleted!", Toast.LENGTH_SHORT).show()
             }
             .setNegativeButton("Cancel", null)
             .show()
-    }
-
-    private fun showLoading(show: Boolean) {
-        binding.progressBar.visibility = if (show) android.view.View.VISIBLE else android.view.View.GONE
     }
 }

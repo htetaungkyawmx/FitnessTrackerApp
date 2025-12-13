@@ -19,9 +19,9 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun initViews() {
-        binding.btnLogin.setOnClickListener {
-            val username = binding.etUsername.text.toString().trim()
-            val password = binding.etPassword.text.toString().trim()
+        binding.buttonLogin.setOnClickListener {
+            val username = binding.editTextUsername.text.toString().trim()
+            val password = binding.editTextPassword.text.toString().trim()
 
             if (username.isEmpty() || password.isEmpty()) {
                 Toast.makeText(this, "Please enter username and password", Toast.LENGTH_SHORT).show()
@@ -34,7 +34,7 @@ class LoginActivity : AppCompatActivity() {
             finish()
         }
 
-        binding.tvRegister.setOnClickListener {
+        binding.textViewRegister.setOnClickListener {
             startActivity(Intent(this, RegisterActivity::class.java))
         }
     }
