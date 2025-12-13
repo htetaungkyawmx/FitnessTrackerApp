@@ -5,14 +5,14 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.ArrayAdapter
-import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import org.hak.fitnesstrackerapp.databinding.ActivityHistoryBinding
 import org.hak.fitnesstrackerapp.databinding.DialogFilterBinding
+import org.hak.fitnesstrackerapp.network.models.Activity
+import org.hak.fitnesstrackerapp.network.models.Statistics
 import org.hak.fitnesstrackerapp.viewmodel.ActivityViewModel
 import java.util.*
 

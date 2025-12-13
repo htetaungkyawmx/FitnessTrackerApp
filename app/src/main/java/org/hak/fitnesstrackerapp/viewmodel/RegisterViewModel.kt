@@ -5,6 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
+import org.hak.fitnesstrackerapp.network.models.AuthResponse
 import org.hak.fitnesstrackerapp.repository.FitnessRepository
 import org.hak.fitnesstrackerapp.repository.SharedPrefManager
 
@@ -41,7 +42,7 @@ class RegisterViewModel(
         _registerState.value = RegisterState.Loading
 
         viewModelScope.launch {
-            val result = repository.register(username, email, password)
+            val result = repository.register(username, email, password, confirmPassword)
 
             when {
                 result.isSuccess -> {
@@ -61,6 +62,6 @@ class RegisterViewModel(
 
 sealed class RegisterState {
     object Loading : RegisterState()
-    data class Success(val user: org.hak.fitnesstrackerapp.network.models.UserResponse) : RegisterState()
+    data class Success(val user: AuthResponse) : RegisterState()
     data class Error(val message: String) : RegisterState()
 }

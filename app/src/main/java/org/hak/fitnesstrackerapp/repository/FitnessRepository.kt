@@ -8,7 +8,7 @@ import org.hak.fitnesstrackerapp.network.models.*
 class FitnessRepository {
     private val apiService = RetrofitClient.getApiService()
 
-    suspend fun register(username: String, email: String, password: String): Result<AuthResponse> {
+    suspend fun register(username: String, email: String, password: String, confirmPassword: String): Result<AuthResponse> {
         return withContext(Dispatchers.IO) {
             try {
                 val response = apiService.register(
@@ -161,7 +161,7 @@ class FitnessRepository {
     }
 
     suspend fun updateProfile(
-        heightCm: Double? = null,
+        heightCm: UpdateProfileRequest = null,
         weightKg: Double? = null,
         birthDate: String? = null
     ): Result<UserProfileResponse> {

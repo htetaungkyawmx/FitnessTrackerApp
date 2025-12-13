@@ -5,9 +5,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
-import org.hak.fitnesstrackerapp.network.UserProfileResponse
-import org.hak.fitnesstrackerapp.network.models.ProfileResponse
-import org.hak.fitnesstrackerapp.network.models.UpdateProfileRequest
 import org.hak.fitnesstrackerapp.repository.FitnessRepository
 
 class ProfileViewModel(private val repository: FitnessRepository) : ViewModel() {
@@ -44,7 +41,14 @@ class ProfileViewModel(private val repository: FitnessRepository) : ViewModel() 
         _updateProfileState.value = UpdateProfileState.Loading
 
         viewModelScope.launch {
-            val result = repository.updateProfile(UpdateProfileRequest(height, weight, birthDate))
+            // Create UpdateProfileRequest object
+            val request = org.hak.fitnesstrackerapp.network.models.UpdateProfileRequest(
+                heightCm = height,
+                weightKg = weight,
+                birthDate = birthDate
+            )
+
+            val result = repository.updateProfile(request)
 
             when {
                 result.isSuccess -> {
@@ -79,7 +83,7 @@ class ProfileViewModel(private val repository: FitnessRepository) : ViewModel() 
         _changePasswordState.value = ChangePasswordState.Loading
 
         viewModelScope.launch {
-            val result = repository.changePassword(currentPassword, newPassword)
+            val result = repository.changePassword(currentPassword, newPassword, confirmPassword)
 
             when {
                 result.isSuccess -> {
@@ -97,13 +101,13 @@ class ProfileViewModel(private val repository: FitnessRepository) : ViewModel() 
 
 sealed class ProfileState {
     object Loading : ProfileState()
-    data class Success(val response: ProfileResponse) : ProfileState()
+    data class Success(val response: org.hak.fitnesstrackerapp.network.models.ProfileResponse) : ProfileState()
     data class Error(val message: String) : ProfileState()
 }
 
 sealed class UpdateProfileState {
     object Loading : UpdateProfileState()
-    data class Success(val response: UserProfileResponse) : UpdateProfileState()
+    data class Success(val response: org.hak.fitnesstrackerapp.network.models.UserProfileResponse) : UpdateProfileState()
     data class Error(val message: String) : UpdateProfileState()
 }
 

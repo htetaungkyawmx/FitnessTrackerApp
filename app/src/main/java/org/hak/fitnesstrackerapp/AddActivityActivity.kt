@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import org.hak.fitnesstrackerapp.databinding.ActivityAddActivityBinding
+import org.hak.fitnesstrackerapp.viewmodel.ActivityViewModel
 import java.util.*
 
 class AddActivityActivity : AppCompatActivity() {

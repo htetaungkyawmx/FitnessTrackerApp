@@ -7,7 +7,7 @@ data class ActivityIdResponse(
     val activityId: Int
 )
 
-data class ActivitiesResponse(
+data class ActivityResponse(
     @SerializedName("activities")
     val activities: List<Activity>,
 
