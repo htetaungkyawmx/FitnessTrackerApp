@@ -14,7 +14,7 @@
         android:layout_marginBottom="40dp"
         android:src="@drawable/ic_fitness"
         android:contentDescription="Fitness Logo"
-        android:tint="@color/primary" />
+        app:tint="@color/primary" />
 
     <TextView
         android:layout_width="wrap_content"

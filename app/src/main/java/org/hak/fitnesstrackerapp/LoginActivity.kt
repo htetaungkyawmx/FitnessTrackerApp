@@ -2,6 +2,7 @@ package org.hak.fitnesstrackerapp
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.coroutines.CoroutineScope
@@ -22,8 +23,18 @@ class LoginActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityLoginBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+
+        try {
+            binding = ActivityLoginBinding.inflate(layoutInflater)
+            setContentView(binding.root)
+
+            Log.d("LoginActivity", "View binding successful")
+        } catch (e: Exception) {
+            Log.e("LoginActivity", "View binding failed: ${e.message}")
+            e.printStackTrace()
+            Toast.makeText(this, "Layout error: ${e.message}", Toast.LENGTH_SHORT).show()
+            return
+        }
 
         preferencesManager = PreferencesManager(this)
 
@@ -31,27 +42,36 @@ class LoginActivity : AppCompatActivity() {
         if (preferencesManager.isLoggedIn && preferencesManager.userId != -1) {
             startActivity(Intent(this, DashboardActivity::class.java))
             finish()
+            return
         }
 
         setupClickListeners()
     }
 
     private fun setupClickListeners() {
-        binding.btnLogin.setOnClickListener {
-            val email = binding.etEmail.text.toString().trim()
-            val password = binding.etPassword.text.toString().trim()
+        try {
+            binding.btnLogin.setOnClickListener {
+                Log.d("LoginActivity", "Login button clicked")
+                val email = binding.etEmail.text.toString().trim()
+                val password = binding.etPassword.text.toString().trim()
 
-            if (validateInput(email, password)) {
-                loginUser(email, password)
+                if (validateInput(email, password)) {
+                    loginUser(email, password)
+                }
             }
-        }
 
-        binding.tvRegister.setOnClickListener {
-            startActivity(Intent(this, RegisterActivity::class.java))
-        }
+            binding.tvRegister.setOnClickListener {
+                Log.d("LoginActivity", "Register text clicked")
+                val intent = Intent(this, RegisterActivity::class.java)
+                startActivity(intent)
+            }
 
-        binding.tvForgotPassword.setOnClickListener {
-            Toast.makeText(this, "Reset password feature coming soon!", Toast.LENGTH_SHORT).show()
+            binding.tvForgotPassword?.setOnClickListener {
+                Toast.makeText(this, "Reset password feature coming soon!", Toast.LENGTH_SHORT).show()
+            }
+        } catch (e: Exception) {
+            Log.e("LoginActivity", "Click listener error: ${e.message}")
+            Toast.makeText(this, "UI Error: ${e.message}", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -61,12 +81,14 @@ class LoginActivity : AppCompatActivity() {
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
+                Log.d("LoginActivity", "Attempting login for: $email")
                 val response = apiService.login(LoginRequest(email, password))
 
                 withContext(Dispatchers.Main) {
                     handleLoginResponse(response)
                 }
             } catch (e: Exception) {
+                Log.e("LoginActivity", "Login error: ${e.message}", e)
                 withContext(Dispatchers.Main) {
                     Toast.makeText(this@LoginActivity, "Network error: ${e.message}", Toast.LENGTH_SHORT).show()
                     binding.btnLogin.isEnabled = true
@@ -77,33 +99,43 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun handleLoginResponse(response: Response<ApiResponse>) {
-        if (response.isSuccessful) {
-            val apiResponse = response.body()
-            if (apiResponse?.success == true) {
-                val userData = apiResponse.data as? Map<String, Any>
-                if (userData != null) {
-                    preferencesManager.isLoggedIn = true
-                    preferencesManager.userId = (userData["id"] as? Double)?.toInt() ?: 1
-                    preferencesManager.userName = (userData["name"] as? String) ?: "User"
-                    preferencesManager.userEmail = (userData["email"] as? String) ?: ""
+        try {
+            Log.d("LoginActivity", "Response code: ${response.code()}")
 
-                    Toast.makeText(this, "Login successful!", Toast.LENGTH_SHORT).show()
+            if (response.isSuccessful) {
+                val apiResponse = response.body()
+                Log.d("LoginActivity", "API Response: $apiResponse")
 
-                    val intent = Intent(this, DashboardActivity::class.java)
-                    startActivity(intent)
-                    finish()
+                if (apiResponse?.success == true) {
+                    val userData = apiResponse.data as? Map<String, Any>
+                    if (userData != null) {
+                        preferencesManager.isLoggedIn = true
+                        preferencesManager.userId = (userData["id"] as? Double)?.toInt() ?: 1
+                        preferencesManager.userName = (userData["name"] as? String) ?: "User"
+                        preferencesManager.userEmail = (userData["email"] as? String) ?: ""
+
+                        Toast.makeText(this, "Login successful!", Toast.LENGTH_SHORT).show()
+
+                        val intent = Intent(this, DashboardActivity::class.java)
+                        startActivity(intent)
+                        finish()
+                    } else {
+                        Toast.makeText(this, "Invalid response data", Toast.LENGTH_SHORT).show()
+                    }
                 } else {
-                    Toast.makeText(this, "Invalid response data", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, apiResponse?.message ?: "Login failed", Toast.LENGTH_SHORT).show()
                 }
             } else {
-                Toast.makeText(this, apiResponse?.message ?: "Login failed", Toast.LENGTH_SHORT).show()
+                Log.e("LoginActivity", "Server error: ${response.errorBody()?.string()}")
+                Toast.makeText(this, "Server error: ${response.code()}", Toast.LENGTH_SHORT).show()
             }
-        } else {
-            Toast.makeText(this, "Server error: ${response.code()}", Toast.LENGTH_SHORT).show()
+        } catch (e: Exception) {
+            Log.e("LoginActivity", "Handle response error: ${e.message}", e)
+            Toast.makeText(this, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+        } finally {
+            binding.btnLogin.isEnabled = true
+            binding.btnLogin.text = "Login"
         }
-
-        binding.btnLogin.isEnabled = true
-        binding.btnLogin.text = "Login"
     }
 
     private fun validateInput(email: String, password: String): Boolean {

@@ -1,6 +1,7 @@
 package org.hak.fitnesstrackerapp
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import org.hak.fitnesstrackerapp.utils.PreferencesManager
 
@@ -9,17 +10,21 @@ abstract class BaseActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
+            runOnUiThread {
+                Toast.makeText(
+                    this,
+                    "App crashed: ${throwable.message}",
+                    Toast.LENGTH_LONG
+                ).show()
+                throwable.printStackTrace()
+            }
+        }
+
         preferencesManager = PreferencesManager(this)
         setupActivity()
     }
 
     abstract fun setupActivity()
-
-    protected fun checkLogin(): Boolean {
-        return preferencesManager.isLoggedIn && preferencesManager.userId != -1
-    }
-
-    protected fun getUserId(): Int {
-        return preferencesManager.userId
-    }
 }
