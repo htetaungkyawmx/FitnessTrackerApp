@@ -5,5 +5,6 @@ data class DashboardStats(
     val calories: Int = 0,
     val distance: Double = 0.0,
     val duration: Int = 0,
-    val totalActivities: Int = 0
+    val totalActivities: Int = 0,
+    val activityTypes: List<String> = emptyList()
 )

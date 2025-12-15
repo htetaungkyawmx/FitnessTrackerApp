@@ -21,10 +21,13 @@ class ActivityAdapter(
         val tvDistance: TextView = itemView.findViewById(R.id.tvActivityDistance)
         val tvCalories: TextView = itemView.findViewById(R.id.tvActivityCalories)
         val tvDate: TextView = itemView.findViewById(R.id.tvActivityDate)
+        val tvDetails: TextView? = itemView.findViewById(R.id.tvActivityDetails)
 
         init {
             itemView.setOnClickListener {
-                onItemClick(activities[adapterPosition])
+                if (adapterPosition != RecyclerView.NO_POSITION) {
+                    onItemClick(activities[adapterPosition])
+                }
             }
         }
     }
@@ -44,21 +47,29 @@ class ActivityAdapter(
             "cycling" -> R.drawable.ic_distance
             "walking" -> R.drawable.ic_duration
             "swimming" -> R.drawable.ic_calories
-            "gym" -> R.drawable.ic_fitness
+            "gym", "weightlifting" -> R.drawable.ic_fitness
+            "yoga" -> R.drawable.ic_steps
             else -> R.drawable.ic_fitness
         }
         holder.ivIcon.setImageResource(iconRes)
 
         holder.tvType.text = activity.type
         holder.tvDuration.text = "${activity.duration} min"
-        holder.tvDistance.text = "${activity.distance} km"
+        holder.tvDistance.text = String.format("%.1f km", activity.distance)
         holder.tvCalories.text = "${activity.calories} cal"
-        holder.tvDate.text = activity.getFormattedDate()
+        holder.tvDate.text = activity.getShortDate()
+
+        // Show weightlifting details if available
+        if (activity.type == "Weightlifting" && activity.exerciseName != null) {
+            holder.tvDetails?.text = "${activity.exerciseName} - ${activity.sets}x${activity.reps} @ ${activity.weight}kg"
+            holder.tvDetails?.visibility = View.VISIBLE
+        } else {
+            holder.tvDetails?.visibility = View.GONE
+        }
     }
 
     override fun getItemCount(): Int = activities.size
 
-    // Add this function to update activities
     fun updateActivities(newActivities: List<FitnessActivity>) {
         this.activities = newActivities
         notifyDataSetChanged()

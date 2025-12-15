@@ -1,23 +1,23 @@
 package org.hak.fitnesstrackerapp
 
 import android.os.Bundle
-import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.hak.fitnesstrackerapp.adapters.ActivityAdapter
 import org.hak.fitnesstrackerapp.databinding.ActivityActivityHistoryBinding
-import org.hak.fitnesstrackerapp.models.FitnessActivity
-import java.text.SimpleDateFormat
+import org.hak.fitnesstrackerapp.network.RetrofitClient
 import java.util.*
 
-class ActivityHistoryActivity : AppCompatActivity() {
+class ActivityHistoryActivity : BaseActivity() {
     private lateinit var binding: ActivityActivityHistoryBinding
     private lateinit var activityAdapter: ActivityAdapter
-    private val allActivities = mutableListOf<FitnessActivity>()
-    private val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+    private val apiService = RetrofitClient.instance
+    private val allActivities = mutableListOf<org.hak.fitnesstrackerapp.models.FitnessActivity>()
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+    override fun setupActivity() {
         binding = ActivityActivityHistoryBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -38,7 +38,7 @@ class ActivityHistoryActivity : AppCompatActivity() {
 
     private fun setupRecyclerView() {
         activityAdapter = ActivityAdapter(allActivities) { activity ->
-            Toast.makeText(this, "Activity: ${activity.type}", Toast.LENGTH_SHORT).show()
+            showToast("${activity.type} - ${activity.duration} min")
         }
 
         binding.rvActivities.layoutManager = LinearLayoutManager(this)
@@ -64,80 +64,33 @@ class ActivityHistoryActivity : AppCompatActivity() {
     }
 
     private fun loadActivities() {
-        allActivities.clear()
-        allActivities.addAll(generateSampleActivities())
-        activityAdapter.notifyDataSetChanged()
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val response = apiService.getActivities(preferencesManager.userId)
 
-        binding.tvTotalCount.text = "Total: ${allActivities.size} activities"
-    }
-
-    private fun generateSampleActivities(): List<FitnessActivity> {
-        val calendar = Calendar.getInstance()
-        val activities = mutableListOf<FitnessActivity>()
-
-        // Today's activities
-        activities.add(FitnessActivity(
-            id = 1,
-            userId = 1,
-            type = "Running",
-            duration = 45,
-            distance = 5.2,
-            calories = 320,
-            note = "Morning run",
-            dateString = dateFormat.format(calendar.time),
-            createdAt = dateFormat.format(calendar.time)
-        ))
-
-        // Yesterday
-        calendar.add(Calendar.DAY_OF_YEAR, -1)
-        activities.add(FitnessActivity(
-            id = 2,
-            userId = 1,
-            type = "Cycling",
-            duration = 60,
-            distance = 15.5,
-            calories = 450,
-            note = "Evening cycling",
-            dateString = dateFormat.format(calendar.time),
-            createdAt = dateFormat.format(calendar.time)
-        ))
-
-        // 3 days ago
-        calendar.add(Calendar.DAY_OF_YEAR, -2)
-        activities.add(FitnessActivity(
-            id = 3,
-            userId = 1,
-            type = "Walking",
-            duration = 30,
-            distance = 2.5,
-            calories = 150,
-            note = "Park walk",
-            dateString = dateFormat.format(calendar.time),
-            createdAt = dateFormat.format(calendar.time)
-        ))
-
-        // 1 week ago
-        calendar.add(Calendar.DAY_OF_YEAR, -4)
-        activities.add(FitnessActivity(
-            id = 4,
-            userId = 1,
-            type = "Swimming",
-            duration = 45,
-            distance = 1.0,
-            calories = 400,
-            note = "Pool session",
-            dateString = dateFormat.format(calendar.time),
-            createdAt = dateFormat.format(calendar.time)
-        ))
-
-        return activities
+                withContext(Dispatchers.Main) {
+                    if (response.success) {
+                        allActivities.clear()
+                        allActivities.addAll(response.getActivities())
+                        activityAdapter.updateActivities(allActivities)
+                        updateTotalCount(allActivities.size)
+                    } else {
+                        showToast("Failed to load activities")
+                    }
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    showLongToast("Error loading activities: ${e.message}")
+                }
+            }
+        }
     }
 
     private fun filterActivities(filter: String) {
         val calendar = Calendar.getInstance()
         val filtered = when (filter) {
             "today" -> allActivities.filter {
-                isSameDay(it.date, calendar.time)  // it.date (computed property) ကိုသုံးပါ
+                isSameDay(it.date, calendar.time)
             }
             "week" -> allActivities.filter {
                 isWithinWeek(it.date, calendar.time)
@@ -148,15 +101,9 @@ class ActivityHistoryActivity : AppCompatActivity() {
             else -> allActivities
         }
 
-        activityAdapter = ActivityAdapter(filtered) { activity ->
-            Toast.makeText(this, "Activity: ${activity.type}", Toast.LENGTH_SHORT).show()
-        }
-        binding.rvActivities.adapter = activityAdapter
-
-        // Update UI buttons selection state
+        activityAdapter.updateActivities(filtered)
         updateButtonSelection(filter)
-
-        binding.tvTotalCount.text = "Showing: ${filtered.size} activities"
+        updateTotalCount(filtered.size)
     }
 
     private fun updateButtonSelection(filter: String) {
@@ -164,6 +111,10 @@ class ActivityHistoryActivity : AppCompatActivity() {
         binding.btnWeek.isSelected = filter == "week"
         binding.btnMonth.isSelected = filter == "month"
         binding.btnAll.isSelected = filter == "all"
+    }
+
+    private fun updateTotalCount(count: Int) {
+        binding.tvTotalCount.text = "Showing: $count activities"
     }
 
     private fun isSameDay(date1: Date, date2: Date): Boolean {

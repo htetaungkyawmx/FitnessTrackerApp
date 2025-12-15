@@ -2,17 +2,21 @@ package org.hak.fitnesstrackerapp
 
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
 import org.hak.fitnesstrackerapp.databinding.ActivityMainBinding
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : BaseActivity() {
     private lateinit var binding: ActivityMainBinding
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+    override fun setupActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        // Check if user is already logged in
+        if (preferencesManager.isLoggedIn) {
+            startActivity(Intent(this, DashboardActivity::class.java))
+            finish()
+            return
+        }
 
         setupClickListeners()
     }
@@ -27,6 +31,9 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.btnGuest.setOnClickListener {
+            // Guest mode - set a temporary user ID
+            preferencesManager.userId = 999
+            preferencesManager.userName = "Guest User"
             startActivity(Intent(this, DashboardActivity::class.java))
             finish()
         }

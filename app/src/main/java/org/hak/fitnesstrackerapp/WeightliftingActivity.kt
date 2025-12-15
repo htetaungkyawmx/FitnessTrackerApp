@@ -2,61 +2,50 @@ package org.hak.fitnesstrackerapp
 
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
-import android.content.Intent
 import android.os.Bundle
 import android.widget.ArrayAdapter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.hak.fitnesstrackerapp.databinding.ActivityAddActivityBinding
+import org.hak.fitnesstrackerapp.databinding.ActivityWeightliftingBinding
 import org.hak.fitnesstrackerapp.network.RetrofitClient
 import java.text.SimpleDateFormat
 import java.util.*
 
-class AddActivityActivity : BaseActivity() {
-    private lateinit var binding: ActivityAddActivityBinding
+class WeightliftingActivity : BaseActivity() {
+    private lateinit var binding: ActivityWeightliftingBinding
     private val apiService = RetrofitClient.instance
     private val calendar = Calendar.getInstance()
     private val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
-    private var isWeightlifting = false
 
     override fun setupActivity() {
-        binding = ActivityAddActivityBinding.inflate(layoutInflater)
+        binding = ActivityWeightliftingBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         setupToolbar()
-        setupSpinner()
+        setupExerciseSpinner()
         setupClickListeners()
+        setDefaultDateTime()
     }
 
     private fun setupToolbar() {
         setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        supportActionBar?.title = "Add Activity"
+        supportActionBar?.title = "Add Weightlifting"
         binding.toolbar.setNavigationOnClickListener {
             onBackPressed()
         }
     }
 
-    private fun setupSpinner() {
-        val activityTypes = arrayOf("Running", "Walking", "Cycling", "Swimming", "Gym", "Weightlifting", "Yoga")
-        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, activityTypes)
+    private fun setupExerciseSpinner() {
+        val exercises = arrayOf(
+            "Bench Press", "Squat", "Deadlift", "Shoulder Press",
+            "Bicep Curls", "Tricep Extensions", "Lat Pulldown", "Leg Press"
+        )
+        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, exercises)
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        binding.spActivityType.adapter = adapter
-
-        // Listen for Weightlifting selection
-        binding.spActivityType.onItemSelectedListener = object : android.widget.AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: android.widget.AdapterView<*>?, view: android.view.View?, position: Int, id: Long) {
-                isWeightlifting = (activityTypes[position] == "Weightlifting")
-                if (isWeightlifting) {
-                    // Navigate to weightlifting activity
-                    startActivity(Intent(this@AddActivityActivity, WeightliftingActivity::class.java))
-                    finish()
-                }
-            }
-            override fun onNothingSelected(parent: android.widget.AdapterView<*>?) {}
-        }
+        binding.spExercise.adapter = adapter
     }
 
     private fun setupClickListeners() {
@@ -66,9 +55,21 @@ class AddActivityActivity : BaseActivity() {
 
         binding.btnSave.setOnClickListener {
             if (validateInput()) {
-                saveActivity()
+                saveWeightliftingActivity()
             }
         }
+    }
+
+    private fun setDefaultDateTime() {
+        val dateTime = String.format(
+            "%02d/%02d/%04d %02d:%02d",
+            calendar.get(Calendar.DAY_OF_MONTH),
+            calendar.get(Calendar.MONTH) + 1,
+            calendar.get(Calendar.YEAR),
+            calendar.get(Calendar.HOUR_OF_DAY),
+            calendar.get(Calendar.MINUTE)
+        )
+        binding.tvSelectedDateTime.text = dateTime
     }
 
     private fun showDateTimePicker() {
@@ -84,16 +85,7 @@ class AddActivityActivity : BaseActivity() {
                     { _, hour, minute ->
                         calendar.set(Calendar.HOUR_OF_DAY, hour)
                         calendar.set(Calendar.MINUTE, minute)
-
-                        val dateTime = String.format(
-                            "%02d/%02d/%04d %02d:%02d",
-                            calendar.get(Calendar.DAY_OF_MONTH),
-                            calendar.get(Calendar.MONTH) + 1,
-                            calendar.get(Calendar.YEAR),
-                            calendar.get(Calendar.HOUR_OF_DAY),
-                            calendar.get(Calendar.MINUTE)
-                        )
-                        binding.tvSelectedDateTime.text = dateTime
+                        setDefaultDateTime()
                     },
                     calendar.get(Calendar.HOUR_OF_DAY),
                     calendar.get(Calendar.MINUTE),
@@ -111,13 +103,23 @@ class AddActivityActivity : BaseActivity() {
     private fun validateInput(): Boolean {
         var isValid = true
 
-        if (binding.etDuration.text.toString().isEmpty()) {
-            binding.etDuration.error = "Duration is required"
+        if (binding.etSets.text.toString().isEmpty()) {
+            binding.etSets.error = "Sets is required"
             isValid = false
         }
 
-        if (binding.etDistance.text.toString().isEmpty()) {
-            binding.etDistance.error = "Distance is required"
+        if (binding.etReps.text.toString().isEmpty()) {
+            binding.etReps.error = "Reps is required"
+            isValid = false
+        }
+
+        if (binding.etWeight.text.toString().isEmpty()) {
+            binding.etWeight.error = "Weight is required"
+            isValid = false
+        }
+
+        if (binding.etDuration.text.toString().isEmpty()) {
+            binding.etDuration.error = "Duration is required"
             isValid = false
         }
 
@@ -129,24 +131,37 @@ class AddActivityActivity : BaseActivity() {
         return isValid
     }
 
-    private fun saveActivity() {
-        val type = binding.spActivityType.selectedItem.toString()
+    private fun saveWeightliftingActivity() {
+        val exerciseName = binding.spExercise.selectedItem.toString()
+        val sets = binding.etSets.text.toString().toIntOrNull() ?: 0
+        val reps = binding.etReps.text.toString().toIntOrNull() ?: 0
+        val weight = binding.etWeight.text.toString().toDoubleOrNull() ?: 0.0
         val duration = binding.etDuration.text.toString().toIntOrNull() ?: 0
-        val distance = binding.etDistance.text.toString().toDoubleOrNull() ?: 0.0
         val calories = binding.etCalories.text.toString().toIntOrNull() ?: 0
         val note = binding.etNote.text.toString()
 
         // Format date for API
         val formattedDate = dateFormat.format(calendar.time)
 
+        // Calculate estimated calories if not provided
+        val estimatedCalories = if (calories == 0) {
+            (sets * reps * weight * 0.1).toInt()
+        } else {
+            calories
+        }
+
         val activityRequest = mapOf(
             "user_id" to preferencesManager.userId,
-            "type" to type,
+            "type" to "Weightlifting",
             "duration" to duration,
-            "distance" to distance,
-            "calories" to calories,
+            "distance" to 0,
+            "calories" to estimatedCalories,
             "note" to note,
-            "date" to formattedDate
+            "date" to formattedDate,
+            "exercise_name" to exerciseName,
+            "sets" to sets,
+            "reps" to reps,
+            "weight" to weight
         )
 
         binding.btnSave.isEnabled = false
@@ -158,7 +173,7 @@ class AddActivityActivity : BaseActivity() {
 
                 withContext(Dispatchers.Main) {
                     if (response.success) {
-                        showToast("Activity saved successfully!")
+                        showToast("Weightlifting activity saved successfully!")
                         finish()
                     } else {
                         showToast(response.message ?: "Failed to save activity")

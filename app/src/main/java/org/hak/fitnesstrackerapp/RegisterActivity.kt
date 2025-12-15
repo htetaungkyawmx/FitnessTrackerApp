@@ -2,47 +2,33 @@ package org.hak.fitnesstrackerapp
 
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hak.fitnesstrackerapp.databinding.ActivityRegisterBinding
-import org.hak.fitnesstrackerapp.network.ApiResponse
 import org.hak.fitnesstrackerapp.network.RetrofitClient
-import org.hak.fitnesstrackerapp.network.UserRequest
-import org.hak.fitnesstrackerapp.utils.PreferencesManager
-import retrofit2.Response
 
-class RegisterActivity : AppCompatActivity() {
+class RegisterActivity : BaseActivity() {
     private lateinit var binding: ActivityRegisterBinding
-    private lateinit var preferencesManager: PreferencesManager
     private val apiService = RetrofitClient.instance
 
-    // Store the user input values as class properties
-    private var userName: String = ""
-    private var userEmail: String = ""
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+    override fun setupActivity() {
         binding = ActivityRegisterBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
-        preferencesManager = PreferencesManager(this)
 
         setupClickListeners()
     }
 
     private fun setupClickListeners() {
         binding.btnRegister.setOnClickListener {
-            userName = binding.etName.text.toString().trim()
-            userEmail = binding.etEmail.text.toString().trim()
+            val name = binding.etName.text.toString().trim()
+            val email = binding.etEmail.text.toString().trim()
             val password = binding.etPassword.text.toString().trim()
             val confirmPassword = binding.etConfirmPassword.text.toString().trim()
 
-            if (validateInput(userName, userEmail, password, confirmPassword)) {
-                registerUser(userName, userEmail, password)
+            if (validateInput(name, email, password, confirmPassword)) {
+                registerUser(name, email, password)
             }
         }
 
@@ -58,49 +44,36 @@ class RegisterActivity : AppCompatActivity() {
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val response = apiService.register(UserRequest(name, email, password))
+                val userData = mapOf(
+                    "name" to name,
+                    "email" to email,
+                    "password" to password
+                )
+                val response = apiService.register(userData)
 
                 withContext(Dispatchers.Main) {
-                    handleRegisterResponse(response, name, email)
+                    if (response.success && response.data != null) {
+                        // Save user data
+                        preferencesManager.isLoggedIn = true
+                        preferencesManager.saveUserData(response.data)
+
+                        showToast("Registration successful!")
+                        startActivity(Intent(this@RegisterActivity, DashboardActivity::class.java))
+                        finish()
+                    } else {
+                        showToast(response.message)
+                        binding.btnRegister.isEnabled = true
+                        binding.btnRegister.text = "Register"
+                    }
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(this@RegisterActivity, "Network error: ${e.message}", Toast.LENGTH_SHORT).show()
+                    showLongToast("Network error: ${e.message}")
                     binding.btnRegister.isEnabled = true
                     binding.btnRegister.text = "Register"
                 }
             }
         }
-    }
-
-    private fun handleRegisterResponse(
-        response: Response<ApiResponse>,
-        name: String,
-        email: String
-    ) {
-        if (response.isSuccessful) {
-            val apiResponse = response.body()
-            if (apiResponse?.success == true) {
-                val userData = apiResponse.data as? Map<String, Any>
-                if (userData != null) {
-                    preferencesManager.isLoggedIn = true
-                    preferencesManager.userId = (userData["user_id"] as? Double)?.toInt() ?: 1
-                    preferencesManager.userName = (userData["name"] as? String) ?: name
-                    preferencesManager.userEmail = (userData["email"] as? String) ?: email
-
-                    Toast.makeText(this, "Registration successful!", Toast.LENGTH_SHORT).show()
-                    startActivity(Intent(this, DashboardActivity::class.java))
-                    finish()
-                }
-            } else {
-                Toast.makeText(this, apiResponse?.message ?: "Registration failed", Toast.LENGTH_SHORT).show()
-            }
-        } else {
-            Toast.makeText(this, "Server error: ${response.code()}", Toast.LENGTH_SHORT).show()
-        }
-
-        binding.btnRegister.isEnabled = true
-        binding.btnRegister.text = "Register"
     }
 
     private fun validateInput(

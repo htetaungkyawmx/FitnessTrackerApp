@@ -13,7 +13,11 @@ data class FitnessActivity(
     val calories: Int = 0,
     val note: String = "",
     val dateString: String = "",
-    val createdAt: String = ""
+    val createdAt: String = "",
+    val exerciseName: String? = null,
+    val sets: Int? = null,
+    val reps: Int? = null,
+    val weight: Double? = null
 ) {
     val date: Date
         get() = parseDateString()
@@ -31,6 +35,16 @@ data class FitnessActivity(
         return try {
             val inputFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
             val outputFormat = SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault())
+            outputFormat.format(inputFormat.parse(dateString) ?: Date())
+        } catch (e: Exception) {
+            dateString
+        }
+    }
+
+    fun getShortDate(): String {
+        return try {
+            val inputFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+            val outputFormat = SimpleDateFormat("MMM dd", Locale.getDefault())
             outputFormat.format(inputFormat.parse(dateString) ?: Date())
         } catch (e: Exception) {
             dateString
