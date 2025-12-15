@@ -32,14 +32,7 @@ class HistoryAdapter(
         val activity = activities[position]
 
         // Format date
-        val date = try {
-            val inputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-            val outputFormat = SimpleDateFormat("EEE, MMM d", Locale.getDefault())
-            val parsedDate = inputFormat.parse(activity.dateString.substring(0, 10))
-            outputFormat.format(parsedDate ?: Date())
-        } catch (e: Exception) {
-            activity.getShortDate()
-        }
+        val date = activity.getShortDate() // Fixed here
 
         holder.tvDate.text = date
         holder.tvActivity.text = activity.type

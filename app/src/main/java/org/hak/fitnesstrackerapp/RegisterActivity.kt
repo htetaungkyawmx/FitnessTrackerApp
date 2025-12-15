@@ -1,13 +1,13 @@
 package org.hak.fitnesstrackerapp
 
 import android.content.Intent
-import android.os.Bundle
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hak.fitnesstrackerapp.databinding.ActivityRegisterBinding
 import org.hak.fitnesstrackerapp.network.RetrofitClient
+import org.hak.fitnesstrackerapp.network.UserRequest
 
 class RegisterActivity : BaseActivity() {
     private lateinit var binding: ActivityRegisterBinding
@@ -44,27 +44,27 @@ class RegisterActivity : BaseActivity() {
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val userData = mapOf(
-                    "name" to name,
-                    "email" to email,
-                    "password" to password
-                )
-                val response = apiService.register(userData)
+                val response = apiService.register(UserRequest(name, email, password))
 
                 withContext(Dispatchers.Main) {
-                    if (response.success && response.data != null) {
-                        // Save user data
-                        preferencesManager.isLoggedIn = true
-                        preferencesManager.saveUserData(response.data)
+                    if (response.isSuccessful) {
+                        val apiResponse = response.body()
+                        if (apiResponse?.success == true && apiResponse.data != null) { // Fixed here
+                            // Save user data
+                            preferencesManager.isLoggedIn = true
+                            preferencesManager.saveUserData(apiResponse.data) // Fixed here
 
-                        showToast("Registration successful!")
-                        startActivity(Intent(this@RegisterActivity, DashboardActivity::class.java))
-                        finish()
+                            showToast("Registration successful!")
+                            startActivity(Intent(this@RegisterActivity, DashboardActivity::class.java))
+                            finish()
+                        } else {
+                            showToast(apiResponse?.message ?: "Registration failed") // Fixed here
+                        }
                     } else {
-                        showToast(response.message)
-                        binding.btnRegister.isEnabled = true
-                        binding.btnRegister.text = "Register"
+                        showToast("Server error: ${response.code()}")
                     }
+                    binding.btnRegister.isEnabled = true
+                    binding.btnRegister.text = "Register"
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {

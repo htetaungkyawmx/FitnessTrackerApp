@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="API Connection Test"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="24dp" />
+
+    <Button
+        android:id="@+id/btnTestGet"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Test GET Request"
+        android:layout_marginBottom="8dp" />
+
+    <Button
+        android:id="@+id/btnTestPost"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Test POST Request"
+        android:layout_marginBottom="8dp" />
+
+    <Button
+        android:id="@+id/btnTestRetrofit"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Test Retrofit"
+        android:layout_marginBottom="8dp" />
+
+    <Button
+        android:id="@+id/btnTestRawHttp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Test Raw HTTP"
+        android:layout_marginBottom="24dp" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <TextView
+            android:id="@+id/tvResult"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Test results will appear here..."
+            android:textSize="12sp"
+            android:background="#f0f0f0"
+            android:padding="8dp" />
+
+    </ScrollView>
+
+</LinearLayout>

@@ -89,14 +89,19 @@ class DashboardActivity : BaseActivity() {
     private fun loadStats() {
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val response = apiService.getStats(preferencesManager.userId, "today")
+                val response = apiService.getStats(preferencesManager.userId) // Fixed - removed period parameter
 
                 withContext(Dispatchers.Main) {
-                    if (response.success) {
-                        val stats = response.getStats()
-                        updateStats(stats)
+                    if (response.isSuccessful) {
+                        val statsResponse = response.body()
+                        if (statsResponse?.success == true) { // Fixed here
+                            val stats = statsResponse.getStats() // Fixed here
+                            updateStats(stats)
+                        } else {
+                            showToast(statsResponse?.message ?: "Failed to load stats")
+                        }
                     } else {
-                        showToast("Failed to load stats")
+                        showToast("Server error: ${response.code()}")
                     }
                 }
             } catch (e: Exception) {
@@ -110,12 +115,17 @@ class DashboardActivity : BaseActivity() {
     private fun loadRecentActivities() {
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val response = apiService.getActivities(preferencesManager.userId, limit = 3)
+                val response = apiService.getActivities(preferencesManager.userId) // Fixed - removed limit parameter
 
                 withContext(Dispatchers.Main) {
-                    if (response.success) {
-                        val activities = response.getActivities()
-                        activityAdapter.updateActivities(activities)
+                    if (response.isSuccessful) {
+                        val activitiesResponse = response.body()
+                        if (activitiesResponse?.success == true) { // Fixed here
+                            val activities = activitiesResponse.getActivities() // Fixed here
+                            // Show only recent 3 activities
+                            val recentActivities = activities.take(3)
+                            activityAdapter.updateActivities(recentActivities)
+                        }
                     }
                 }
             } catch (e: Exception) {

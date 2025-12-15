@@ -9,6 +9,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hak.fitnesstrackerapp.databinding.ActivityWeightliftingBinding
+import org.hak.fitnesstrackerapp.network.ActivityRequest
 import org.hak.fitnesstrackerapp.network.RetrofitClient
 import java.text.SimpleDateFormat
 import java.util.*
@@ -150,18 +151,18 @@ class WeightliftingActivity : BaseActivity() {
             calories
         }
 
-        val activityRequest = mapOf(
-            "user_id" to preferencesManager.userId,
-            "type" to "Weightlifting",
-            "duration" to duration,
-            "distance" to 0,
-            "calories" to estimatedCalories,
-            "note" to note,
-            "date" to formattedDate,
-            "exercise_name" to exerciseName,
-            "sets" to sets,
-            "reps" to reps,
-            "weight" to weight
+        val activityRequest = ActivityRequest(
+            user_id = preferencesManager.userId,
+            type = "Weightlifting",
+            duration = duration,
+            distance = 0.0,
+            calories = estimatedCalories,
+            note = note,
+            date = formattedDate,
+            exercise_name = exerciseName,
+            sets = sets,
+            reps = reps,
+            weight = weight
         )
 
         binding.btnSave.isEnabled = false
@@ -172,14 +173,19 @@ class WeightliftingActivity : BaseActivity() {
                 val response = apiService.addActivity(activityRequest)
 
                 withContext(Dispatchers.Main) {
-                    if (response.success) {
-                        showToast("Weightlifting activity saved successfully!")
-                        finish()
+                    if (response.isSuccessful) {
+                        val apiResponse = response.body()
+                        if (apiResponse?.success == true) { // Fixed here
+                            showToast("Weightlifting activity saved successfully!")
+                            finish()
+                        } else {
+                            showToast(apiResponse?.message ?: "Failed to save activity") // Fixed here
+                        }
                     } else {
-                        showToast(response.message ?: "Failed to save activity")
-                        binding.btnSave.isEnabled = true
-                        binding.btnSave.text = "Save Activity"
+                        showToast("Server error: ${response.code()}")
                     }
+                    binding.btnSave.isEnabled = true
+                    binding.btnSave.text = "Save Activity"
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {

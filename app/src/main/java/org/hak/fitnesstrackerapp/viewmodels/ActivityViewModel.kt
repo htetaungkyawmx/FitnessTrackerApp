@@ -6,11 +6,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import org.hak.fitnesstrackerapp.models.FitnessActivity
-import org.hak.fitnesstrackerapp.network.ApiService
 import org.hak.fitnesstrackerapp.network.RetrofitClient
 
 class ActivityViewModel : ViewModel() {
-    private val apiService: ApiService = RetrofitClient.instance
+    private val apiService = RetrofitClient.instance
 
     private val _activities = MutableLiveData<List<FitnessActivity>>()
     val activities: LiveData<List<FitnessActivity>> = _activities
@@ -26,10 +25,15 @@ class ActivityViewModel : ViewModel() {
             _isLoading.value = true
             try {
                 val response = apiService.getActivities(userId)
-                if (response.success) {
-                    _activities.value = response.getActivities()
+                if (response.isSuccessful) {
+                    val activitiesResponse = response.body()
+                    if (activitiesResponse?.success == true) { // Fixed here
+                        _activities.value = activitiesResponse.getActivities() // Fixed here
+                    } else {
+                        _error.value = activitiesResponse?.message ?: "Failed to load activities" // Fixed here
+                    }
                 } else {
-                    _error.value = response.message
+                    _error.value = "Server error: ${response.code()}"
                 }
             } catch (e: Exception) {
                 _error.value = "Network error: ${e.message}"
@@ -39,15 +43,29 @@ class ActivityViewModel : ViewModel() {
         }
     }
 
-    fun filterActivities(userId: Int, type: String? = null, dateFrom: String? = null, dateTo: String? = null) {
+    // Note: Remove the filterActivities function since our API doesn't support filters
+    // or modify it to filter locally
+    fun filterActivitiesLocally(userId: Int, type: String? = null) {
         viewModelScope.launch {
             _isLoading.value = true
             try {
-                val response = apiService.getActivities(userId, type, dateFrom, dateTo)
-                if (response.success) {
-                    _activities.value = response.getActivities()
+                val response = apiService.getActivities(userId)
+                if (response.isSuccessful) {
+                    val activitiesResponse = response.body()
+                    if (activitiesResponse?.success == true) {
+                        val allActivities = activitiesResponse.getActivities()
+                        // Filter locally
+                        val filtered = if (type != null) {
+                            allActivities.filter { it.type.equals(type, ignoreCase = true) }
+                        } else {
+                            allActivities
+                        }
+                        _activities.value = filtered
+                    } else {
+                        _error.value = activitiesResponse?.message ?: "Failed to load activities"
+                    }
                 } else {
-                    _error.value = response.message
+                    _error.value = "Server error: ${response.code()}"
                 }
             } catch (e: Exception) {
                 _error.value = "Network error: ${e.message}"

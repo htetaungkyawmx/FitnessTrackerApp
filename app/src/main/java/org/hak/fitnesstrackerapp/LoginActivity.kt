@@ -2,12 +2,12 @@ package org.hak.fitnesstrackerapp
 
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Toast
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hak.fitnesstrackerapp.databinding.ActivityLoginBinding
+import org.hak.fitnesstrackerapp.network.LoginRequest
 import org.hak.fitnesstrackerapp.network.RetrofitClient
 
 class LoginActivity : BaseActivity() {
@@ -42,8 +42,13 @@ class LoginActivity : BaseActivity() {
             startActivity(Intent(this, RegisterActivity::class.java))
         }
 
-        binding.tvForgotPassword.setOnClickListener {
-            showToast("Reset password feature coming soon!")
+        // Check if tvForgotPassword exists
+        try {
+            binding.tvForgotPassword?.setOnClickListener {
+                showToast("Reset password feature coming soon!")
+            }
+        } catch (e: Exception) {
+            // Ignore if view doesn't exist
         }
     }
 
@@ -53,26 +58,27 @@ class LoginActivity : BaseActivity() {
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val credentials = mapOf(
-                    "email" to email,
-                    "password" to password
-                )
-                val response = apiService.login(credentials)
+                val response = apiService.login(LoginRequest(email, password))
 
                 withContext(Dispatchers.Main) {
-                    if (response.success && response.data != null) {
-                        // Save user data
-                        preferencesManager.isLoggedIn = true
-                        preferencesManager.saveUserData(response.data)
+                    if (response.isSuccessful) {
+                        val apiResponse = response.body()
+                        if (apiResponse?.success == true && apiResponse.data != null) {
+                            // Save user data
+                            preferencesManager.isLoggedIn = true
+                            preferencesManager.saveUserData(apiResponse.data)
 
-                        showToast("Login successful!")
-                        startActivity(Intent(this@LoginActivity, DashboardActivity::class.java))
-                        finish()
+                            showToast("Login successful!")
+                            startActivity(Intent(this@LoginActivity, DashboardActivity::class.java))
+                            finish()
+                        } else {
+                            showToast(apiResponse?.message ?: "Login failed")
+                        }
                     } else {
-                        showToast(response.message)
-                        binding.btnLogin.isEnabled = true
-                        binding.btnLogin.text = "Login"
+                        showToast("Server error: ${response.code()}")
                     }
+                    binding.btnLogin.isEnabled = true
+                    binding.btnLogin.text = "Login"
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {

@@ -6,11 +6,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import org.hak.fitnesstrackerapp.models.DashboardStats
-import org.hak.fitnesstrackerapp.network.ApiService
 import org.hak.fitnesstrackerapp.network.RetrofitClient
 
 class StatsViewModel : ViewModel() {
-    private val apiService: ApiService = RetrofitClient.instance
+    private val apiService = RetrofitClient.instance
 
     private val _stats = MutableLiveData<DashboardStats>()
     val stats: LiveData<DashboardStats> = _stats
@@ -21,15 +20,20 @@ class StatsViewModel : ViewModel() {
     private val _error = MutableLiveData<String>()
     val error: LiveData<String> = _error
 
-    fun loadStats(userId: Int, period: String = "today") {
+    fun loadStats(userId: Int) { // Fixed - removed period parameter
         viewModelScope.launch {
             _isLoading.value = true
             try {
-                val response = apiService.getStats(userId, period)
-                if (response.success) {
-                    _stats.value = response.getStats()
+                val response = apiService.getStats(userId)
+                if (response.isSuccessful) {
+                    val statsResponse = response.body()
+                    if (statsResponse?.success == true) { // Fixed here
+                        _stats.value = statsResponse.getStats() // Fixed here
+                    } else {
+                        _error.value = statsResponse?.message ?: "Failed to load stats" // Fixed here
+                    }
                 } else {
-                    _error.value = response.message
+                    _error.value = "Server error: ${response.code()}"
                 }
             } catch (e: Exception) {
                 _error.value = "Network error: ${e.message}"

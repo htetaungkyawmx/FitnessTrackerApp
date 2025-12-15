@@ -10,6 +10,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hak.fitnesstrackerapp.databinding.ActivityAddActivityBinding
+import org.hak.fitnesstrackerapp.network.ActivityRequest
 import org.hak.fitnesstrackerapp.network.RetrofitClient
 import java.text.SimpleDateFormat
 import java.util.*
@@ -139,14 +140,14 @@ class AddActivityActivity : BaseActivity() {
         // Format date for API
         val formattedDate = dateFormat.format(calendar.time)
 
-        val activityRequest = mapOf(
-            "user_id" to preferencesManager.userId,
-            "type" to type,
-            "duration" to duration,
-            "distance" to distance,
-            "calories" to calories,
-            "note" to note,
-            "date" to formattedDate
+        val activityRequest = ActivityRequest(
+            user_id = preferencesManager.userId,
+            type = type,
+            duration = duration,
+            distance = distance,
+            calories = calories,
+            note = note,
+            date = formattedDate
         )
 
         binding.btnSave.isEnabled = false
@@ -157,14 +158,19 @@ class AddActivityActivity : BaseActivity() {
                 val response = apiService.addActivity(activityRequest)
 
                 withContext(Dispatchers.Main) {
-                    if (response.success) {
-                        showToast("Activity saved successfully!")
-                        finish()
+                    if (response.isSuccessful) {
+                        val apiResponse = response.body()
+                        if (apiResponse?.success == true) { // Fixed here
+                            showToast("Activity saved successfully!")
+                            finish()
+                        } else {
+                            showToast(apiResponse?.message ?: "Failed to save activity") // Fixed here
+                        }
                     } else {
-                        showToast(response.message ?: "Failed to save activity")
-                        binding.btnSave.isEnabled = true
-                        binding.btnSave.text = "Save Activity"
+                        showToast("Server error: ${response.code()}")
                     }
+                    binding.btnSave.isEnabled = true
+                    binding.btnSave.text = "Save Activity"
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {

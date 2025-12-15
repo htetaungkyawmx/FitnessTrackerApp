@@ -2,41 +2,63 @@ package org.hak.fitnesstrackerapp.network
 
 import org.hak.fitnesstrackerapp.models.DashboardStats
 import org.hak.fitnesstrackerapp.models.FitnessActivity
-import retrofit2.Call
+import retrofit2.Response
 import retrofit2.http.*
 
 interface ApiService {
     @POST("register.php")
-    suspend fun register(@Body user: Map<String, Any>): ApiResponse
+    suspend fun register(@Body user: UserRequest): Response<ApiResponse>
 
     @POST("login.php")
-    suspend fun login(@Body credentials: Map<String, Any>): ApiResponse
+    suspend fun login(@Body credentials: LoginRequest): Response<ApiResponse>
 
     @POST("add_activity.php")
-    suspend fun addActivity(@Body activity: Map<String, Any>): ApiResponse
+    suspend fun addActivity(@Body activity: ActivityRequest): Response<ApiResponse>
 
     @PUT("update_activity.php")
-    suspend fun updateActivity(@Body activity: Map<String, Any>): ApiResponse
+    suspend fun updateActivity(@Body activity: ActivityRequest): Response<ApiResponse>
 
     @HTTP(method = "DELETE", path = "delete_activity.php", hasBody = true)
-    suspend fun deleteActivity(@Body deleteRequest: Map<String, Any>): ApiResponse
+    suspend fun deleteActivity(@Body deleteRequest: DeleteRequest): Response<ApiResponse>
 
     @GET("get_activities.php")
-    suspend fun getActivities(
-        @Query("user_id") userId: Int,
-        @Query("type") type: String? = null,
-        @Query("date_from") dateFrom: String? = null,
-        @Query("date_to") dateTo: String? = null,
-        @Query("limit") limit: Int = 50
-    ): ActivitiesResponse
+    suspend fun getActivities(@Query("user_id") userId: Int): Response<ActivitiesResponse>
 
     @GET("get_stats.php")
-    suspend fun getStats(
-        @Query("user_id") userId: Int,
-        @Query("period") period: String = "today"
-    ): StatsResponse
+    suspend fun getStats(@Query("user_id") userId: Int): Response<StatsResponse>
 }
 
+// Request data classes
+data class UserRequest(
+    val name: String,
+    val email: String,
+    val password: String
+)
+
+data class LoginRequest(
+    val email: String,
+    val password: String
+)
+
+data class ActivityRequest(
+    val user_id: Int,
+    val type: String,
+    val duration: Int,
+    val distance: Double,
+    val calories: Int,
+    val note: String,
+    val date: String,
+    val exercise_name: String? = null,
+    val sets: Int? = null,
+    val reps: Int? = null,
+    val weight: Double? = null
+)
+
+data class DeleteRequest(
+    val id: Int
+)
+
+// Response data classes
 data class ApiResponse(
     val success: Boolean,
     val message: String,
@@ -46,51 +68,44 @@ data class ApiResponse(
 data class ActivitiesResponse(
     val success: Boolean,
     val message: String,
-    val data: Map<String, Any>? = null
+    val data: ActivitiesData? = null
 ) {
     fun getActivities(): List<FitnessActivity> {
-        val activities = mutableListOf<FitnessActivity>()
-        val activitiesList = data?.get("activities") as? List<Map<String, Any>>
-
-        activitiesList?.forEach { activityMap ->
-            val activity = FitnessActivity(
-                id = (activityMap["id"] as? Number)?.toInt() ?: 0,
-                userId = (activityMap["user_id"] as? Number)?.toInt() ?: 0,
-                type = activityMap["type"] as? String ?: "",
-                duration = (activityMap["duration"] as? Number)?.toInt() ?: 0,
-                distance = (activityMap["distance"] as? Number)?.toDouble() ?: 0.0,
-                calories = (activityMap["calories"] as? Number)?.toInt() ?: 0,
-                note = activityMap["note"] as? String ?: "",
-                dateString = activityMap["date"] as? String ?: "",
-                createdAt = activityMap["created_at"] as? String ?: "",
-                exerciseName = activityMap["exercise_name"] as? String,
-                sets = (activityMap["sets"] as? Number)?.toInt(),
-                reps = (activityMap["reps"] as? Number)?.toInt(),
-                weight = (activityMap["weight"] as? Number)?.toDouble()
-            )
-            activities.add(activity)
-        }
-        return activities
+        return data?.activities ?: emptyList()
     }
 
     fun getTotal(): Int {
-        return (data?.get("total") as? Number)?.toInt() ?: 0
+        return data?.total ?: 0
     }
 }
+
+data class ActivitiesData(
+    val activities: List<FitnessActivity> = emptyList(),
+    val total: Int = 0
+)
 
 data class StatsResponse(
     val success: Boolean,
     val message: String,
-    val data: Map<String, Any>? = null
+    val data: StatsData? = null
 ) {
     fun getStats(): DashboardStats {
         return DashboardStats(
-            steps = (data?.get("steps") as? Number)?.toInt() ?: 0,
-            calories = (data?.get("calories") as? Number)?.toInt() ?: 0,
-            distance = (data?.get("distance") as? Number)?.toDouble() ?: 0.0,
-            duration = (data?.get("duration") as? Number)?.toInt() ?: 0,
-            totalActivities = (data?.get("total_activities") as? Number)?.toInt() ?: 0,
-            activityTypes = (data?.get("activity_types") as? List<String>) ?: emptyList()
+            steps = data?.steps ?: 0,
+            calories = data?.calories ?: 0,
+            distance = data?.distance ?: 0.0,
+            duration = data?.duration ?: 0,
+            totalActivities = data?.total_activities ?: 0,
+            activityTypes = data?.activity_types ?: emptyList()
         )
     }
 }
+
+data class StatsData(
+    val steps: Int = 0,
+    val calories: Int = 0,
+    val distance: Double = 0.0,
+    val duration: Int = 0,
+    val total_activities: Int = 0,
+    val activity_types: List<String> = emptyList()
+)

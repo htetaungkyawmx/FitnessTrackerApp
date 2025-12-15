@@ -47,7 +47,12 @@ data class FitnessActivity(
             val outputFormat = SimpleDateFormat("MMM dd", Locale.getDefault())
             outputFormat.format(inputFormat.parse(dateString) ?: Date())
         } catch (e: Exception) {
-            dateString
+            // Try just the date part
+            if (dateString.length >= 10) {
+                dateString.substring(0, 10)
+            } else {
+                dateString
+            }
         }
     }
 }

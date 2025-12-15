@@ -69,13 +69,18 @@ class ActivityHistoryActivity : BaseActivity() {
                 val response = apiService.getActivities(preferencesManager.userId)
 
                 withContext(Dispatchers.Main) {
-                    if (response.success) {
-                        allActivities.clear()
-                        allActivities.addAll(response.getActivities())
-                        activityAdapter.updateActivities(allActivities)
-                        updateTotalCount(allActivities.size)
+                    if (response.isSuccessful) {
+                        val activitiesResponse = response.body()
+                        if (activitiesResponse?.success == true) { // Fixed here
+                            allActivities.clear()
+                            allActivities.addAll(activitiesResponse.getActivities()) // Fixed here
+                            activityAdapter.updateActivities(allActivities)
+                            updateTotalCount(allActivities.size)
+                        } else {
+                            showToast(activitiesResponse?.message ?: "Failed to load activities")
+                        }
                     } else {
-                        showToast("Failed to load activities")
+                        showToast("Server error: ${response.code()}")
                     }
                 }
             } catch (e: Exception) {

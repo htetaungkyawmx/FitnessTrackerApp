@@ -21,7 +21,6 @@ class ActivityAdapter(
         val tvDistance: TextView = itemView.findViewById(R.id.tvActivityDistance)
         val tvCalories: TextView = itemView.findViewById(R.id.tvActivityCalories)
         val tvDate: TextView = itemView.findViewById(R.id.tvActivityDate)
-        val tvDetails: TextView? = itemView.findViewById(R.id.tvActivityDetails)
 
         init {
             itemView.setOnClickListener {
@@ -57,15 +56,7 @@ class ActivityAdapter(
         holder.tvDuration.text = "${activity.duration} min"
         holder.tvDistance.text = String.format("%.1f km", activity.distance)
         holder.tvCalories.text = "${activity.calories} cal"
-        holder.tvDate.text = activity.getShortDate()
-
-        // Show weightlifting details if available
-        if (activity.type == "Weightlifting" && activity.exerciseName != null) {
-            holder.tvDetails?.text = "${activity.exerciseName} - ${activity.sets}x${activity.reps} @ ${activity.weight}kg"
-            holder.tvDetails?.visibility = View.VISIBLE
-        } else {
-            holder.tvDetails?.visibility = View.GONE
-        }
+        holder.tvDate.text = activity.getShortDate() // Fixed here
     }
 
     override fun getItemCount(): Int = activities.size
