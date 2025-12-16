@@ -54,15 +54,15 @@
         android:textColor="@color/primary"
         app:cornerRadius="12dp" />
 
-    <TextView
-        android:id="@+id/btnGuest"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Continue as Guest"
-        android:textSize="16sp"
-        android:textColor="@color/primary"
-        android:padding="12dp"
-        android:clickable="true"
-        android:focusable="true" />
+<!--    <TextView-->
+<!--        android:id="@+id/btnGuest"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:text="Continue as Guest"-->
+<!--        android:textSize="16sp"-->
+<!--        android:textColor="@color/primary"-->
+<!--        android:padding="12dp"-->
+<!--        android:clickable="true"-->
+<!--        android:focusable="true" />-->
 
 </LinearLayout>

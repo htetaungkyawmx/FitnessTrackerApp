@@ -7,8 +7,8 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
 object RetrofitClient {
-    // Make this public so other classes can access it
-    const val BASE_URL = "http://192.168.0.103/fitness_tracker/api/"
+//    const val BASE_URL = "http://localhost:81/L5DC_PHP/Mobile/backend/api/" //test get in postman
+    const val BASE_URL = "http://10.0.2.2:81/L5DC_PHP/Mobile/backend/api/" //for emulator
 
     private val client = OkHttpClient.Builder()
         .addInterceptor(HttpLoggingInterceptor().apply {

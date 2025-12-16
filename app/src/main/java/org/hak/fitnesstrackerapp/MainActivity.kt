@@ -30,12 +30,11 @@ class MainActivity : BaseActivity() {
             startActivity(Intent(this, RegisterActivity::class.java))
         }
 
-        binding.btnGuest.setOnClickListener {
-            // Guest mode - set a temporary user ID
+        /*binding.btnGuest.setOnClickListener {
             preferencesManager.userId = 999
             preferencesManager.userName = "Guest User"
             startActivity(Intent(this, DashboardActivity::class.java))
             finish()
-        }
+        }*/
     }
 }
