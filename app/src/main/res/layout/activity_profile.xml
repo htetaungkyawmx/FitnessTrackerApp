@@ -1,23 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/white"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    tools:context=".ProfileActivity">
 
+    <!-- Toolbar -->
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         android:background="@color/white"
         app:navigationIcon="@drawable/ic_back"
+        app:title="Profile Settings"
         app:titleTextColor="@color/text_primary" />
 
+    <!-- Content -->
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
+        android:layout_height="match_parent"
         android:padding="16dp">
 
         <LinearLayout
@@ -25,17 +29,9 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Profile Settings"
-                android:textSize="24sp"
-                android:textStyle="bold"
-                android:textColor="@color/text_primary"
-                android:layout_marginBottom="24dp" />
-
+            <!-- Name -->
             <com.google.android.material.textfield.TextInputLayout
-                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
@@ -45,12 +41,12 @@
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etName"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:inputType="textPersonName" />
+                    android:layout_height="wrap_content" />
             </com.google.android.material.textfield.TextInputLayout>
 
+            <!-- Email -->
             <com.google.android.material.textfield.TextInputLayout
-                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
@@ -64,14 +60,16 @@
                     android:inputType="textEmailAddress" />
             </com.google.android.material.textfield.TextInputLayout>
 
+            <!-- Age & Gender Row -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginBottom="16dp">
+                android:layout_marginBottom="16dp"
+                android:orientation="horizontal">
 
+                <!-- Age -->
                 <com.google.android.material.textfield.TextInputLayout
-                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
@@ -85,30 +83,36 @@
                         android:inputType="number" />
                 </com.google.android.material.textfield.TextInputLayout>
 
+                <!-- Gender - Material Spinner in TextInputLayout -->
                 <com.google.android.material.textfield.TextInputLayout
-                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:hint="Gender">
 
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/etGender"
+                    <androidx.appcompat.widget.AppCompatSpinner
+                        android:id="@+id/spGender"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="Male/Female" />
+                        android:background="@android:color/transparent"
+                        android:paddingStart="0dp"
+                        android:paddingEnd="0dp" />
+
                 </com.google.android.material.textfield.TextInputLayout>
 
             </LinearLayout>
 
+            <!-- Weight & Height Row -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginBottom="16dp">
+                android:layout_marginBottom="16dp"
+                android:orientation="horizontal">
 
+                <!-- Weight -->
                 <com.google.android.material.textfield.TextInputLayout
-                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
@@ -122,8 +126,9 @@
                         android:inputType="numberDecimal" />
                 </com.google.android.material.textfield.TextInputLayout>
 
+                <!-- Height -->
                 <com.google.android.material.textfield.TextInputLayout
-                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
@@ -138,8 +143,9 @@
 
             </LinearLayout>
 
+            <!-- Daily Goal -->
             <com.google.android.material.textfield.TextInputLayout
-                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="24dp"
@@ -153,6 +159,7 @@
                     android:text="10000" />
             </com.google.android.material.textfield.TextInputLayout>
 
+            <!-- Save Button -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnSave"
                 android:layout_width="match_parent"
@@ -163,13 +170,14 @@
                 android:backgroundTint="@color/primary"
                 app:cornerRadius="12dp" />
 
+            <!-- Logout Button -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnLogout"
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
                 android:text="Logout"
                 android:textSize="18sp"
-                style="@style/Widget.Material3.Button.OutlinedButton"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                 android:textColor="@color/primary"
                 app:cornerRadius="12dp" />
 

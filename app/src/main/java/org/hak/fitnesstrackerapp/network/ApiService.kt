@@ -18,6 +18,9 @@ interface ApiService {
     @PUT("update_activity.php")
     suspend fun updateActivity(@Body activity: ActivityRequest): Response<ApiResponse>
 
+    @PUT("update_profile.php")
+    suspend fun updateProfile(@Body profileData: Map<String, Any>): Response<BaseResponse>
+
     @HTTP(method = "DELETE", path = "delete_activity.php", hasBody = true)
     suspend fun deleteActivity(@Body deleteRequest: DeleteRequest): Response<ApiResponse>
 
@@ -58,8 +61,13 @@ data class DeleteRequest(
     val id: Int
 )
 
-// Response data classes
 data class ApiResponse(
+    val success: Boolean,
+    val message: String,
+    val data: Map<String, Any>? = null
+)
+
+data class BaseResponse(
     val success: Boolean,
     val message: String,
     val data: Map<String, Any>? = null
