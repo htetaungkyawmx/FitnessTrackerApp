@@ -1,9 +1,9 @@
 package org.hak.fitnesstrackerapp
 
 import android.content.Intent
-import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.ImageView
 import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -17,12 +17,12 @@ class DashboardActivity : BaseActivity() {
     private lateinit var binding: ActivityDashboardBinding
     private lateinit var activityAdapter: ActivityAdapter
     private val apiService = RetrofitClient.instance
+    private var badgeDot: ImageView? = null
 
     override fun setupActivity() {
         binding = ActivityDashboardBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Check if user is logged in
         if (!preferencesManager.isLoggedIn || preferencesManager.userId == -1) {
             startActivity(Intent(this, LoginActivity::class.java))
             finish()
@@ -39,11 +39,33 @@ class DashboardActivity : BaseActivity() {
         setSupportActionBar(binding.toolbar)
         binding.toolbar.title = "Fitness Tracker"
 
-        // Set welcome message
+        setupBadgeDot()
         val userName = preferencesManager.userName
         if (userName.isNotEmpty()) {
             binding.tvWelcome.text = "Welcome, $userName!"
         }
+    }
+
+    private fun setupBadgeDot() {
+        val profileItem = binding.toolbar.menu?.findItem(R.id.menu_profile)
+        if (profileItem != null) {
+            val actionView = layoutInflater.inflate(R.layout.menu_badge_layout, null)
+            profileItem.actionView = actionView
+
+            badgeDot = actionView.findViewById(R.id.badge_dot)
+            val profileIcon = actionView.findViewById<ImageView>(R.id.profile_icon)
+
+            profileIcon.setImageResource(R.drawable.ic_profile)
+
+            actionView.setOnClickListener {
+                onOptionsItemSelected(profileItem)
+            }
+            showBadgeDot(true)
+        }
+    }
+
+    fun showBadgeDot(show: Boolean) {
+        badgeDot?.visibility = if (show) android.view.View.VISIBLE else android.view.View.GONE
     }
 
     private fun setupRecyclerView() {
@@ -89,13 +111,13 @@ class DashboardActivity : BaseActivity() {
     private fun loadStats() {
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val response = apiService.getStats(preferencesManager.userId) // Fixed - removed period parameter
+                val response = apiService.getStats(preferencesManager.userId)
 
                 withContext(Dispatchers.Main) {
                     if (response.isSuccessful) {
                         val statsResponse = response.body()
-                        if (statsResponse?.success == true) { // Fixed here
-                            val stats = statsResponse.getStats() // Fixed here
+                        if (statsResponse?.success == true) {
+                            val stats = statsResponse.getStats()
                             updateStats(stats)
                         } else {
                             showToast(statsResponse?.message ?: "Failed to load stats")
@@ -115,13 +137,13 @@ class DashboardActivity : BaseActivity() {
     private fun loadRecentActivities() {
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val response = apiService.getActivities(preferencesManager.userId) // Fixed - removed limit parameter
+                val response = apiService.getActivities(preferencesManager.userId)
 
                 withContext(Dispatchers.Main) {
                     if (response.isSuccessful) {
                         val activitiesResponse = response.body()
-                        if (activitiesResponse?.success == true) { // Fixed here
-                            val activities = activitiesResponse.getActivities() // Fixed here
+                        if (activitiesResponse?.success == true) {
+                            val activities = activitiesResponse.getActivities()
                             // Show only recent 3 activities
                             val recentActivities = activities.take(3)
                             activityAdapter.updateActivities(recentActivities)
@@ -148,6 +170,26 @@ class DashboardActivity : BaseActivity() {
         return true
     }
 
+    override fun onPrepareOptionsMenu(menu: Menu): Boolean {
+        val profileItem = menu.findItem(R.id.menu_profile)
+        if (profileItem != null) {
+            val actionView = layoutInflater.inflate(R.layout.menu_badge_layout, null)
+            profileItem.actionView = actionView
+
+            badgeDot = actionView.findViewById(R.id.badge_dot)
+            val profileIcon = actionView.findViewById<ImageView>(R.id.profile_icon)
+
+            profileIcon.setImageResource(R.drawable.ic_profile)
+
+            actionView.setOnClickListener {
+                onOptionsItemSelected(profileItem)
+            }
+            showBadgeDot(true)
+        }
+
+        return super.onPrepareOptionsMenu(menu)
+    }
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.menu_profile -> {
@@ -159,17 +201,13 @@ class DashboardActivity : BaseActivity() {
                 showToast("Refreshed!")
                 true
             }
-            R.id.menu_settings -> {
-                showToast("Settings coming soon!")
-                true
-            }
-            R.id.menu_logout -> {
-                preferencesManager.clear()
-                startActivity(Intent(this, MainActivity::class.java))
-                finish()
-                true
-            }
             else -> super.onOptionsItemSelected(item)
         }
+    }
+
+    private fun performLogout() {
+        preferencesManager.clear()
+        startActivity(Intent(this, MainActivity::class.java))
+        finish()
     }
 }
