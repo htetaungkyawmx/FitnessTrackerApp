@@ -1,4 +1,4 @@
-package org.hak.fitnesstrackerapp.network
+package org.azm.fitness_app.network
 
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -7,24 +7,29 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
 object RetrofitClient {
-//    const val BASE_URL = "http://localhost:81/L5DC_PHP/Mobile/backend/api/" //test get in postman
-    const val BASE_URL = "http://10.0.2.2:81/L5DC_PHP/Mobile/backend/api/" //for emulator
 
-    private val client = OkHttpClient.Builder()
-        .addInterceptor(HttpLoggingInterceptor().apply {
-            level = HttpLoggingInterceptor.Level.BODY
-        })
+    const val BASE_URL = "http://10.0.2.2:81/L5DC_PHP/Mobile/backend/api/"
+
+    private val loggingInterceptor = HttpLoggingInterceptor().apply {
+        level = HttpLoggingInterceptor.Level.BODY
+    }
+
+    private val okHttpClient = OkHttpClient.Builder()
+        .addInterceptor(loggingInterceptor)
         .connectTimeout(30, TimeUnit.SECONDS)
         .readTimeout(30, TimeUnit.SECONDS)
         .writeTimeout(30, TimeUnit.SECONDS)
         .build()
 
-    val instance: ApiService by lazy {
+    private val retrofit: Retrofit by lazy {
         Retrofit.Builder()
             .baseUrl(BASE_URL)
-            .client(client)
+            .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
-            .create(ApiService::class.java)
+    }
+
+    val instance: ApiService by lazy {
+        retrofit.create(ApiService::class.java)
     }
 }
