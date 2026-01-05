@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="workout_types">
+        <item>Running</item>
+        <item>Cycling</item>
+        <item>Weightlifting</item>
+        <item>Swimming</item>
+        <item>Yoga</item>
+        <item>Walking</item>
+        <item>Other</item>
+    </string-array>
+
+    <string-array name="goal_types">
+        <item>Weekly Exercise (minutes)</item>
+        <item>Weight Loss (kg)</item>
+        <item>Distance (km)</item>
+        <item>Calories Burned</item>
+    </string-array>
+</resources>

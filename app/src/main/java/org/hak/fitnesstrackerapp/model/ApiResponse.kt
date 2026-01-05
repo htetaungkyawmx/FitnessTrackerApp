@@ -1,4 +1,4 @@
-package org.azm.fitness_app.model
+package org.hak.fitnesstrackerapp.model
 
 data class ApiResponse(
     val success: Boolean,

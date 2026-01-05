@@ -1,4 +1,4 @@
-package org.azm.fitness_app.adapters
+package org.hak.fitnesstrackerapp.adapters
 
 import android.view.LayoutInflater
 import android.view.View
@@ -7,8 +7,8 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
-import org.azm.fitness_app.R
-import org.azm.fitness_app.model.Goal
+import org.hak.fitnesstrackerapp.R
+import org.hak.fitnesstrackerapp.model.Goal
 
 class GoalAdapter(
     private var goals: List<Goal>,

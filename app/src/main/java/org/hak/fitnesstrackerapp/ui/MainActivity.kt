@@ -1,4 +1,4 @@
-package org.azm.fitness_app.ui
+package org.hak.fitnesstrackerapp.ui
 
 import android.app.DatePickerDialog
 import android.content.Intent
@@ -11,13 +11,13 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import org.azm.fitness_app.R
-import org.azm.fitness_app.adapters.WorkoutAdapter
-import org.azm.fitness_app.database.SQLiteHelper
-import org.azm.fitness_app.model.Workout
-import org.azm.fitness_app.model.WorkoutRequest
-import org.azm.fitness_app.network.RetrofitClient
-import org.azm.fitness_app.utils.SharedPrefManager
+import org.hak.fitnesstrackerapp.R
+import org.hak.fitnesstrackerapp.adapters.WorkoutAdapter
+import org.hak.fitnesstrackerapp.database.SQLiteHelper
+import org.hak.fitnesstrackerapp.model.Workout
+import org.hak.fitnesstrackerapp.model.WorkoutRequest
+import org.hak.fitnesstrackerapp.network.RetrofitClient
+import org.hak.fitnesstrackerapp.utils.SharedPrefManager
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -298,10 +298,10 @@ class MainActivity : AppCompatActivity() {
         )
 
         val call = RetrofitClient.instance.addWorkout(workoutRequest)
-        call.enqueue(object : Callback<org.azm.fitness_app.model.ApiResponse> {
+        call.enqueue(object : Callback<org.hak.fitnesstrackerapp.model.ApiResponse> {
             override fun onResponse(
-                call: Call<org.azm.fitness_app.model.ApiResponse>,
-                response: Response<org.azm.fitness_app.model.ApiResponse>
+                call: Call<org.hak.fitnesstrackerapp.model.ApiResponse>,
+                response: Response<org.hak.fitnesstrackerapp.model.ApiResponse>
             ) {
                 if (response.isSuccessful) {
                     response.body()?.let { apiResponse ->
@@ -318,7 +318,7 @@ class MainActivity : AppCompatActivity() {
                 }
             }
 
-            override fun onFailure(call: Call<org.azm.fitness_app.model.ApiResponse>, t: Throwable) {
+            override fun onFailure(call: Call<org.hak.fitnesstrackerapp.model.ApiResponse>, t: Throwable) {
                 Log.e(TAG, "Network error: ${t.message}")
                 // Keep as unsynced, will try again later
             }

@@ -1,4 +1,4 @@
-package org.azm.fitness_app.network
+package org.hak.fitnesstrackerapp.network
 
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor

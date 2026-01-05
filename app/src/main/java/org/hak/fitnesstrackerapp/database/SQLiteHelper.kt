@@ -1,4 +1,4 @@
-package org.azm.fitness_app.database
+package org.hak.fitnesstrackerapp.database
 
 import android.content.ContentValues
 import android.content.Context
@@ -6,9 +6,9 @@ import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import android.util.Log
-import org.azm.fitness_app.model.Goal
-import org.azm.fitness_app.model.User
-import org.azm.fitness_app.model.Workout
+import org.hak.fitnesstrackerapp.model.Goal
+import org.hak.fitnesstrackerapp.model.User
+import org.hak.fitnesstrackerapp.model.Workout
 import java.util.Date
 
 class SQLiteHelper(context: Context) : SQLiteOpenHelper(
@@ -16,7 +16,7 @@ class SQLiteHelper(context: Context) : SQLiteOpenHelper(
 ) {
 
     companion object {
-        private const val DATABASE_NAME = "azm_db.db"
+        private const val DATABASE_NAME = "fitness_tracker.db"
         private const val DATABASE_VERSION = 2
 
         const val TABLE_USERS = "users"

@@ -1,4 +1,4 @@
-package org.azm.fitness_app.ui
+package org.hak.fitnesstrackerapp.ui
 
 import android.content.Intent
 import android.graphics.Color
@@ -10,11 +10,10 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
-import org.azm.fitness_app.R
-import org.azm.fitness_app.database.SQLiteHelper
-import org.azm.fitness_app.model.WorkoutRequest
-import org.azm.fitness_app.network.RetrofitClient
-import org.azm.fitness_app.utils.SharedPrefManager
+import org.hak.fitnesstrackerapp.R
+import org.hak.fitnesstrackerapp.database.SQLiteHelper
+import org.hak.fitnesstrackerapp.network.RetrofitClient
+import org.hak.fitnesstrackerapp.utils.SharedPrefManager
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -149,7 +148,7 @@ class ProfileActivity : AppCompatActivity() {
         }
     }
 
-    private fun calculateAndSetBMI(user: org.azm.fitness_app.model.User) {
+    private fun calculateAndSetBMI(user: org.hak.fitnesstrackerapp.model.User) {
         if (user.height > 0 && user.weight > 0) {
             val heightInMeters = user.height / 100.0
             val bmi = user.weight / (heightInMeters * heightInMeters)
@@ -235,10 +234,10 @@ class ProfileActivity : AppCompatActivity() {
         Log.d(TAG, "Syncing data: ${syncData}")
 
         val call = RetrofitClient.instance.syncWorkouts(syncData)
-        call.enqueue(object : Callback<org.azm.fitness_app.model.ApiResponse> {
+        call.enqueue(object : Callback<org.hak.fitnesstrackerapp.model.ApiResponse> {
             override fun onResponse(
-                call: Call<org.azm.fitness_app.model.ApiResponse>,
-                response: Response<org.azm.fitness_app.model.ApiResponse>
+                call: Call<org.hak.fitnesstrackerapp.model.ApiResponse>,
+                response: Response<org.hak.fitnesstrackerapp.model.ApiResponse>
             ) {
                 if (response.isSuccessful) {
                     response.body()?.let { apiResponse ->
@@ -271,7 +270,7 @@ class ProfileActivity : AppCompatActivity() {
                 }
             }
 
-            override fun onFailure(call: Call<org.azm.fitness_app.model.ApiResponse>, t: Throwable) {
+            override fun onFailure(call: Call<org.hak.fitnesstrackerapp.model.ApiResponse>, t: Throwable) {
                 Log.e(TAG, "Network error: ${t.message}")
                 Toast.makeText(
                     this@ProfileActivity,

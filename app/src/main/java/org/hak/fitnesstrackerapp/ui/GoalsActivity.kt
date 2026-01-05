@@ -1,4 +1,4 @@
-package org.azm.fitness_app.ui
+package org.hak.fitnesstrackerapp.ui
 
 import android.app.DatePickerDialog
 import android.os.Bundle
@@ -12,12 +12,12 @@ import androidx.appcompat.widget.Toolbar
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.progressindicator.LinearProgressIndicator
-import org.azm.fitness_app.R
-import org.azm.fitness_app.adapters.GoalAdapter
-import org.azm.fitness_app.database.SQLiteHelper
-import org.azm.fitness_app.model.Goal
-import org.azm.fitness_app.network.RetrofitClient
-import org.azm.fitness_app.utils.SharedPrefManager
+import org.hak.fitnesstrackerapp.R
+import org.hak.fitnesstrackerapp.adapters.GoalAdapter
+import org.hak.fitnesstrackerapp.database.SQLiteHelper
+import org.hak.fitnesstrackerapp.model.Goal
+import org.hak.fitnesstrackerapp.network.RetrofitClient
+import org.hak.fitnesstrackerapp.utils.SharedPrefManager
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -220,10 +220,10 @@ class GoalsActivity : AppCompatActivity() {
 
     private fun saveGoalToServer(goal: Goal) {
         val call = RetrofitClient.instance.addGoal(goal)
-        call.enqueue(object : Callback<org.azm.fitness_app.model.ApiResponse> {
+        call.enqueue(object : Callback<org.hak.fitnesstrackerapp.model.ApiResponse> {
             override fun onResponse(
-                call: Call<org.azm.fitness_app.model.ApiResponse>,
-                response: Response<org.azm.fitness_app.model.ApiResponse>
+                call: Call<org.hak.fitnesstrackerapp.model.ApiResponse>,
+                response: Response<org.hak.fitnesstrackerapp.model.ApiResponse>
             ) {
                 if (response.isSuccessful && response.body()?.success == true) {
                     Log.d(TAG, "Goal saved to server: ${goal.id}")
@@ -232,7 +232,7 @@ class GoalsActivity : AppCompatActivity() {
                 }
             }
 
-            override fun onFailure(call: Call<org.azm.fitness_app.model.ApiResponse>, t: Throwable) {
+            override fun onFailure(call: Call<org.hak.fitnesstrackerapp.model.ApiResponse>, t: Throwable) {
                 Log.e(TAG, "Network error saving goal: ${t.message}")
             }
         })

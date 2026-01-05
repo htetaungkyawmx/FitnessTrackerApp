@@ -1,4 +1,4 @@
-package org.azm.fitness_app.model
+package org.hak.fitnesstrackerapp.model
 
 data class Workout(
     val id: Int = 0,

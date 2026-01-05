@@ -1,4 +1,4 @@
-package org.azm.fitness_app.ui
+package org.hak.fitnesstrackerapp.ui
 
 import android.app.DatePickerDialog
 import android.os.Bundle
@@ -9,11 +9,11 @@ import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import org.azm.fitness_app.R
-import org.azm.fitness_app.database.SQLiteHelper
-import org.azm.fitness_app.model.Workout
-import org.azm.fitness_app.network.RetrofitClient
-import org.azm.fitness_app.utils.SharedPrefManager
+import org.hak.fitnesstrackerapp.R
+import org.hak.fitnesstrackerapp.database.SQLiteHelper
+import org.hak.fitnesstrackerapp.model.Workout
+import org.hak.fitnesstrackerapp.network.RetrofitClient
+import org.hak.fitnesstrackerapp.utils.SharedPrefManager
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -139,7 +139,7 @@ class WorkoutLogActivity : AppCompatActivity() {
     }
 
     private fun syncWithServer(workout: Workout, userId: Int) {
-        val workoutRequest = org.azm.fitness_app.model.WorkoutRequest(
+        val workoutRequest = org.hak.fitnesstrackerapp.model.WorkoutRequest(
             userId = userId,
             type = workout.type,
             duration = workout.duration,
@@ -150,10 +150,10 @@ class WorkoutLogActivity : AppCompatActivity() {
         )
 
         val call = RetrofitClient.instance.addWorkout(workoutRequest)
-        call.enqueue(object : Callback<org.azm.fitness_app.model.ApiResponse> {
+        call.enqueue(object : Callback<org.hak.fitnesstrackerapp.model.ApiResponse> {
             override fun onResponse(
-                call: Call<org.azm.fitness_app.model.ApiResponse>,
-                response: Response<org.azm.fitness_app.model.ApiResponse>
+                call: Call<org.hak.fitnesstrackerapp.model.ApiResponse>,
+                response: Response<org.hak.fitnesstrackerapp.model.ApiResponse>
             ) {
                 if (response.isSuccessful && response.body()?.success == true) {
                     // Mark as synced
@@ -161,7 +161,7 @@ class WorkoutLogActivity : AppCompatActivity() {
                 }
             }
 
-            override fun onFailure(call: Call<org.azm.fitness_app.model.ApiResponse>, t: Throwable) {
+            override fun onFailure(call: Call<org.hak.fitnesstrackerapp.model.ApiResponse>, t: Throwable) {
                 // Keep as unsynced for later sync
             }
         })

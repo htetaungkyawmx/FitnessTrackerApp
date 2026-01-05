@@ -1,4 +1,4 @@
-package org.azm.fitness_app.ui
+package org.hak.fitnesstrackerapp.ui
 
 import android.content.Intent
 import android.os.Bundle
@@ -8,8 +8,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import org.azm.fitness_app.R
-import org.azm.fitness_app.utils.SharedPrefManager
+import org.hak.fitnesstrackerapp.R
+import org.hak.fitnesstrackerapp.utils.SharedPrefManager
 
 class SplashActivity : AppCompatActivity() {
 

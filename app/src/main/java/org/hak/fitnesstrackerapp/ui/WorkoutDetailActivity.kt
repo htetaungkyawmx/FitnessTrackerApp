@@ -1,11 +1,11 @@
-package org.azm.fitness_app.ui
+package org.hak.fitnesstrackerapp.ui
 
 import android.os.Bundle
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import org.azm.fitness_app.R
-import org.azm.fitness_app.database.SQLiteHelper
+import org.hak.fitnesstrackerapp.R
+import org.hak.fitnesstrackerapp.database.SQLiteHelper
 
 class WorkoutDetailActivity : AppCompatActivity() {
     private lateinit var dbHelper: SQLiteHelper
@@ -37,7 +37,7 @@ class WorkoutDetailActivity : AppCompatActivity() {
         }
     }
 
-    private fun displayWorkoutDetails(workout: org.azm.fitness_app.model.Workout) {
+    private fun displayWorkoutDetails(workout: org.hak.fitnesstrackerapp.model.Workout) {
         findViewById<TextView>(R.id.tvType).text = workout.type
         findViewById<TextView>(R.id.tvDate).text = workout.date
         findViewById<TextView>(R.id.tvDuration).text = "${workout.duration} minutes"

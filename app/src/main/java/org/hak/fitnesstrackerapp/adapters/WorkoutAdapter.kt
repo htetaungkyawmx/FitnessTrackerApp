@@ -1,12 +1,12 @@
-package org.azm.fitness_app.adapters
+package org.hak.fitnesstrackerapp.adapters
 
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import org.azm.fitness_app.R
-import org.azm.fitness_app.model.Workout
+import org.hak.fitnesstrackerapp.R
+import org.hak.fitnesstrackerapp.model.Workout
 
 class WorkoutAdapter(
     private var workouts: List<Workout>,

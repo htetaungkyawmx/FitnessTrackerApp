@@ -1,9 +1,9 @@
-package org.azm.fitness_app.utils
+package org.hak.fitnesstrackerapp.utils
 
 import android.content.Context
 import android.content.SharedPreferences
 import com.google.gson.Gson
-import org.azm.fitness_app.model.User
+import org.hak.fitnesstrackerapp.model.User
 
 class SharedPrefManager(context: Context) {
     private val sharedPreferences: SharedPreferences =

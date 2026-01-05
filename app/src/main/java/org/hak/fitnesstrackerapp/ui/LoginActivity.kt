@@ -1,4 +1,4 @@
-package org.azm.fitness_app.ui
+package org.hak.fitnesstrackerapp.ui
 
 import android.content.Intent
 import android.os.Bundle
@@ -7,10 +7,10 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import org.azm.fitness_app.R
-import org.azm.fitness_app.database.SQLiteHelper
-import org.azm.fitness_app.network.RetrofitClient
-import org.azm.fitness_app.utils.SharedPrefManager
+import org.hak.fitnesstrackerapp.R
+import org.hak.fitnesstrackerapp.database.SQLiteHelper
+import org.hak.fitnesstrackerapp.network.RetrofitClient
+import org.hak.fitnesstrackerapp.utils.SharedPrefManager
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -100,13 +100,13 @@ class LoginActivity : AppCompatActivity() {
     private fun loginWithServer(email: String, password: String) {
         try {
             val call = RetrofitClient.instance.login(
-                org.azm.fitness_app.model.LoginRequest(email, password)
+                org.hak.fitnesstrackerapp.model.LoginRequest(email, password)
             )
 
-            call.enqueue(object : Callback<org.azm.fitness_app.model.LoginResponse> {
+            call.enqueue(object : Callback<org.hak.fitnesstrackerapp.model.LoginResponse> {
                 override fun onResponse(
-                    call: Call<org.azm.fitness_app.model.LoginResponse>,
-                    response: Response<org.azm.fitness_app.model.LoginResponse>
+                    call: Call<org.hak.fitnesstrackerapp.model.LoginResponse>,
+                    response: Response<org.hak.fitnesstrackerapp.model.LoginResponse>
                 ) {
                     Log.d(TAG, "Login response received: ${response.code()}")
 
@@ -128,7 +128,7 @@ class LoginActivity : AppCompatActivity() {
                     }
                 }
 
-                override fun onFailure(call: Call<org.azm.fitness_app.model.LoginResponse>, t: Throwable) {
+                override fun onFailure(call: Call<org.hak.fitnesstrackerapp.model.LoginResponse>, t: Throwable) {
                     Log.e(TAG, "Login network error: ${t.message}", t)
                     Toast.makeText(this@LoginActivity, "Network error. Check local users.", Toast.LENGTH_SHORT).show()
                 }

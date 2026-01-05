@@ -1,8 +1,17 @@
-package org.azm.fitness_app.network
+package org.hak.fitnesstrackerapp.network
 
-import org.azm.fitness_app.model.*
+import org.hak.fitnesstrackerapp.model.ApiResponse
+import org.hak.fitnesstrackerapp.model.Goal
+import org.hak.fitnesstrackerapp.model.LoginRequest
+import org.hak.fitnesstrackerapp.model.LoginResponse
+import org.hak.fitnesstrackerapp.model.User
+import org.hak.fitnesstrackerapp.model.Workout
+import org.hak.fitnesstrackerapp.model.WorkoutRequest
 import retrofit2.Call
-import retrofit2.http.*
+import retrofit2.http.Body
+import retrofit2.http.GET
+import retrofit2.http.POST
+import retrofit2.http.Query
 
 interface ApiService {
     @POST("register.php")
