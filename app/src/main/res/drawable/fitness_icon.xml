@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="120dp"
+    android:height="120dp"
+    android:viewportWidth="120"
+    android:viewportHeight="120">
+
+    <!-- Heart Pulse Line -->
+    <path
+        android:name="heartPulse"
+        android:strokeColor="#FF4081"
+        android:strokeWidth="3"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M20,60 L30,50 L40,70 L50,40 L60,80 L70,55 L80,65 L90,45 L100,75"/>
+
+    <!-- Running Man -->
+    <group android:name="runningMan">
+        <!-- Head -->
+        <path
+            android:name="head"
+            android:fillColor="#FFFFFF"
+            android:pathData="M60,30 a8,8 0 1,1 0.1,0 z"/>
+
+        <!-- Body -->
+        <path
+            android:name="body"
+            android:strokeColor="#FFFFFF"
+            android:strokeWidth="3"
+            android:strokeLineCap="round"
+            android:pathData="M60,38 L60,60"/>
+
+        <!-- Arms -->
+        <path
+            android:name="rightArm"
+            android:strokeColor="#FFFFFF"
+            android:strokeWidth="3"
+            android:strokeLineCap="round"
+            android:pathData="M60,45 L45,55"/>
+
+        <path
+            android:name="leftArm"
+            android:strokeColor="#FFFFFF"
+            android:strokeWidth="3"
+            android:strokeLineCap="round"
+            android:pathData="M60,45 L75,35"/>
+
+        <!-- Legs -->
+        <path
+            android:name="rightLeg"
+            android:strokeColor="#FFFFFF"
+            android:strokeWidth="3"
+            android:strokeLineCap="round"
+            android:pathData="M60,60 L50,75"/>
+
+        <path
+            android:name="leftLeg"
+            android:strokeColor="#FFFFFF"
+            android:strokeWidth="3"
+            android:strokeLineCap="round"
+            android:pathData="M60,60 L70,75"/>
+    </group>
+</vector>

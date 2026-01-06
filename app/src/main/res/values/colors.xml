@@ -45,4 +45,10 @@
     <color name="warning">#FF9500</color>
     <color name="error">#FF3B30</color>
     <color name="info">#007AFF</color>
+
+    <color name="gradient_start">#8A2BE2</color>
+    <color name="gradient_end">#4B0082</color>
+    <color name="white_alpha_20">#33FFFFFF</color>
+    <color name="white_alpha_40">#66FFFFFF</color>
+    <color name="white_alpha_60">#99FFFFFF</color>
 </resources>

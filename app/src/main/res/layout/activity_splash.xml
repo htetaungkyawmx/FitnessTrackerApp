@@ -1,48 +1,97 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:gravity="center"
-    android:background="@color/purple_500">
+    android:background="@drawable/splash_background">
 
-    <!-- Logo with shadow/elevation -->
     <ImageView
-        android:id="@+id/logoImageView"
-        android:layout_width="150dp"
-        android:layout_height="150dp"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
         android:src="@mipmap/logo"
-        android:layout_marginBottom="24dp"
-        android:elevation="8dp"/>
+        android:layout_marginBottom="32dp"/>
 
-    <!-- App Name -->
+    <!-- App Name with Gradient Text -->
     <TextView
         android:id="@+id/appNameTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Fitness Tracker"
-        android:textSize="28sp"
+        android:textSize="32sp"
+        android:textStyle="bold"
+        android:gravity="center"
         android:textColor="@android:color/white"
-        android:textStyle="bold"/>
+        android:letterSpacing="0.05"
+        android:lineSpacingExtra="4dp"
+        android:textAllCaps="false"/>
 
-    <!-- Tagline -->
+    <!-- Modern Tagline with Icon -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_marginTop="12dp"
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="8dp"
+        android:background="@drawable/tagline_background">
+
+        <ImageView
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:src="@drawable/ic_heart"
+            android:tint="@color/white"
+            android:layout_marginEnd="8dp"/>
+
+        <TextView
+            android:id="@+id/taglineTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Transform Your Journey"
+            android:textSize="14sp"
+            android:textColor="@android:color/white"
+            android:fontFamily="sans-serif-medium"/>
+    </LinearLayout>
+
+    <!-- Modern Loading Indicator with Dots -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="40dp"
+        android:gravity="center">
+
+        <View
+            android:id="@+id/loadingDot1"
+            android:layout_width="12dp"
+            android:layout_height="12dp"
+            android:layout_marginHorizontal="4dp"
+            android:background="@drawable/loading_dot"/>
+
+        <View
+            android:id="@+id/loadingDot2"
+            android:layout_width="12dp"
+            android:layout_height="12dp"
+            android:layout_marginHorizontal="4dp"
+            android:background="@drawable/loading_dot"/>
+
+        <View
+            android:id="@+id/loadingDot3"
+            android:layout_width="12dp"
+            android:layout_height="12dp"
+            android:layout_marginHorizontal="4dp"
+            android:background="@drawable/loading_dot"/>
+    </LinearLayout>
+
+    <!-- Bottom Text -->
     <TextView
-        android:id="@+id/taglineTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Track Your Fitness Journey"
-        android:textSize="16sp"
-        android:textColor="@android:color/white"
-        android:layout_marginTop="8dp"
-        android:alpha="0.9"/>
-
-    <!-- Loading Progress Bar -->
-    <ProgressBar
-        android:id="@+id/loadingProgressBar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
-        android:indeterminate="true"
-        android:indeterminateTint="@android:color/white"/>
-
+        android:text="Loading..."
+        android:textSize="12sp"
+        android:textColor="@color/white_alpha_60"
+        android:layout_marginTop="12dp"
+        android:fontFamily="sans-serif"/>
 </LinearLayout>

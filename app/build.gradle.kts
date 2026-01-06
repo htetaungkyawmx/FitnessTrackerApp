@@ -71,4 +71,5 @@ dependencies {
 
     //Splash Screen
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4")
+    implementation("com.airbnb.android:lottie:6.1.0")
 }

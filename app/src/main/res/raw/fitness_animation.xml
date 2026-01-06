@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<animated-vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:drawable="@drawable/fitness_icon">
+
+    <!-- Animate heart pulse line -->
+    <target
+        android:name="heartPulse"
+        android:animation="@anim/pulse_animation"/>
+
+    <!-- Animate running man -->
+    <target
+        android:name="runningMan"
+        android:animation="@anim/running_animation"/>
+</animated-vector>
