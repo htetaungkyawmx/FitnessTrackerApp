@@ -145,7 +145,6 @@
         android:textSize="16sp"
         android:textAllCaps="false"
         android:textStyle="bold"
-        android:letterSpacing="0.05"
         android:layout_marginStart="12dp"/>
 
     <!-- Divider -->

@@ -49,8 +49,8 @@ class RegisterActivity : AppCompatActivity() {
     }
 
     private fun setupClickListeners() {
-        val btnRegister: Button = findViewById(R.id.btnRegister)
-        val btnLogin: Button = findViewById(R.id.btnLogin)
+        val btnRegister: Button = findViewById(R.id.btn_register)
+        val btnLogin: Button = findViewById(R.id.btn_login)
 
         btnRegister.setOnClickListener {
             registerUser()
