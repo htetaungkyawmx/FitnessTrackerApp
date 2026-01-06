@@ -7,6 +7,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.cardview.widget.CardView
 import org.hak.fitnesstrackerapp.R
 import org.hak.fitnesstrackerapp.database.SQLiteHelper
 import org.hak.fitnesstrackerapp.network.RetrofitClient
@@ -50,8 +51,8 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun setupClickListeners() {
-        val btnLogin: Button = findViewById(R.id.btnLogin)
-        val btnRegister: Button = findViewById(R.id.btnRegister)
+        val btnLogin: Button = findViewById(R.id.btn_login)
+        val btnRegister: Button = findViewById(R.id.btn_register)
 
         btnLogin.setOnClickListener {
             val email = etEmail.text.toString().trim()
