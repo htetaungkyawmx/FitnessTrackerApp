@@ -8,7 +8,7 @@ import java.util.concurrent.TimeUnit
 
 object RetrofitClient {
 
-    const val BASE_URL = "http://10.0.2.2:81/L5DC_PHP/Mobile/backend/api/"
+    const val BASE_URL = "http://10.0.2.2:81/L5DC_PHP/Mobile/api/"
 
     private val loggingInterceptor = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.BODY

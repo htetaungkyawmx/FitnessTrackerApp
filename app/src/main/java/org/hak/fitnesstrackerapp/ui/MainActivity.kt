@@ -10,7 +10,9 @@ import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import de.hdodenhof.circleimageview.CircleImageView
 import org.hak.fitnesstrackerapp.R
 import org.hak.fitnesstrackerapp.adapters.WorkoutAdapter
 import org.hak.fitnesstrackerapp.database.SQLiteHelper
@@ -27,14 +29,16 @@ import java.util.*
 class MainActivity : AppCompatActivity() {
     private lateinit var tvWelcome: TextView
     private lateinit var tvUserName: TextView
-    private lateinit var tvTodayStats: TextView
     private lateinit var tvDuration: TextView
     private lateinit var tvCalories: TextView
+    private lateinit var tvActiveEnergy: TextView
     private lateinit var tvSeeAll: TextView
     private lateinit var recyclerView: androidx.recyclerview.widget.RecyclerView
     private lateinit var emptyStateView: View
-    private lateinit var btnAddFirst: Button
-    private lateinit var ivProfile: ImageView
+    private lateinit var btnAddFirst: androidx.cardview.widget.CardView
+    private lateinit var ivProfile: CircleImageView
+    private lateinit var bottomNavigation: BottomNavigationView
+    private lateinit var fabAddWorkout: FloatingActionButton
     private lateinit var workoutAdapter: WorkoutAdapter
     private lateinit var dbHelper: SQLiteHelper
     private var showingAllWorkouts = false
@@ -45,7 +49,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         initViews()
-        setupToolbar()
+        setupBottomNavigation()
         setupRecyclerView()
         loadData()
         setupClickListeners()
@@ -54,23 +58,47 @@ class MainActivity : AppCompatActivity() {
     private fun initViews() {
         tvWelcome = findViewById(R.id.tvWelcome)
         tvUserName = findViewById(R.id.tvUserName)
-        tvTodayStats = findViewById(R.id.tvTodayStats)
         tvDuration = findViewById(R.id.tvDuration)
         tvCalories = findViewById(R.id.tvCalories)
+        tvActiveEnergy = findViewById(R.id.tvActiveEnergy)
         tvSeeAll = findViewById(R.id.tvSeeAll)
         recyclerView = findViewById(R.id.recyclerViewWorkouts)
         emptyStateView = findViewById(R.id.emptyStateView)
         btnAddFirst = findViewById(R.id.btnAddFirst)
         ivProfile = findViewById(R.id.ivProfile)
+        bottomNavigation = findViewById(R.id.bottomNavigation)
+        fabAddWorkout = findViewById(R.id.fabAddWorkout)
 
         dbHelper = SQLiteHelper(this)
     }
 
-    private fun setupToolbar() {
-        setSupportActionBar(findViewById(R.id.toolbar))
-        supportActionBar?.apply {
-            setDisplayShowTitleEnabled(true)
-            setDisplayShowHomeEnabled(false)
+    private fun setupBottomNavigation() {
+        bottomNavigation.setOnNavigationItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.nav_home -> {
+                    // Already on home
+                    true
+                }
+                R.id.nav_workouts -> {
+                    val intent = Intent(this, WorkoutLogActivity::class.java)
+                    startActivity(intent)
+                    overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+                    true
+                }
+                R.id.nav_goals -> {
+                    val intent = Intent(this, GoalsActivity::class.java)
+                    startActivity(intent)
+                    overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+                    true
+                }
+                R.id.nav_profile -> {
+                    val intent = Intent(this, ProfileActivity::class.java)
+                    startActivity(intent)
+                    overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+                    true
+                }
+                else -> false
+            }
         }
     }
 
@@ -80,6 +108,7 @@ class MainActivity : AppCompatActivity() {
                 val intent = Intent(this, WorkoutDetailActivity::class.java)
                 intent.putExtra("WORKOUT_ID", workout.id)
                 startActivity(intent)
+                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
             } catch (e: Exception) {
                 Toast.makeText(this, "Error opening workout details", Toast.LENGTH_SHORT).show()
             }
@@ -91,7 +120,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun loadData() {
         val user = SharedPrefManager.getInstance(this).user
-        tvWelcome.text = "Welcome back,"
+        tvWelcome.text = "Welcome back"
         tvUserName.text = user?.name ?: "User"
 
         loadTodayStats()
@@ -99,54 +128,67 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun loadTodayStats() {
-        val today = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
-        val duration = dbHelper.getDailyDuration(today)
-        val calories = dbHelper.getWeeklyCalories(today, today)
+        try {
+            val today = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+            val duration = dbHelper.getDailyDuration(today)
+            val calories = dbHelper.getWeeklyCalories(today, today)
+            val activeEnergy = if (calories > 0) (calories * 0.85).toInt() else 0
 
-        tvTodayStats.text = "Today: ${duration} Min | ${calories} Kcal"
-        tvDuration.text = duration.toString()
-        tvCalories.text = calories.toString()
+            tvDuration.text = duration.toString()
+            tvCalories.text = calories.toString()
+            tvActiveEnergy.text = activeEnergy.toString()
+        } catch (e: Exception) {
+            Log.e(TAG, "Error loading stats: ${e.message}")
+            tvDuration.text = "0"
+            tvCalories.text = "0"
+            tvActiveEnergy.text = "0"
+        }
     }
 
     private fun loadRecentWorkouts() {
-        val workouts = dbHelper.getAllWorkouts()
+        try {
+            val workouts = dbHelper.getAllWorkouts()
 
-        if (workouts.isEmpty()) {
-            showEmptyState()
-        } else {
-            showWorkoutList()
-            if (showingAllWorkouts) {
-                workoutAdapter.updateData(workouts)
-                tvSeeAll.text = "Show Less"
+            if (workouts.isEmpty()) {
+                showEmptyState()
             } else {
-                workoutAdapter.updateData(workouts.take(5))
-                tvSeeAll.text = "See All"
+                showWorkoutList()
+                if (showingAllWorkouts) {
+                    workoutAdapter.updateData(workouts)
+                    tvSeeAll.text = "Show Less"
+                } else {
+                    workoutAdapter.updateData(workouts.take(5))
+                    tvSeeAll.text = "See All"
+                }
             }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error loading workouts: ${e.message}")
+            showEmptyState()
         }
     }
 
     private fun showEmptyState() {
         recyclerView.visibility = View.GONE
         emptyStateView.visibility = View.VISIBLE
-        tvSeeAll.visibility = View.GONE
     }
 
     private fun showWorkoutList() {
         recyclerView.visibility = View.VISIBLE
         emptyStateView.visibility = View.GONE
-        tvSeeAll.visibility = View.VISIBLE
     }
 
     private fun setupClickListeners() {
         ivProfile.setOnClickListener {
             try {
-                startActivity(Intent(this, ProfileActivity::class.java))
+                val intent = Intent(this, ProfileActivity::class.java)
+                startActivity(intent)
+                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
             } catch (e: Exception) {
                 Toast.makeText(this, "Profile screen not available", Toast.LENGTH_SHORT).show()
             }
         }
 
-        findViewById<FloatingActionButton>(R.id.fabAddWorkout).setOnClickListener {
+        fabAddWorkout.setOnClickListener {
             showAddWorkoutDialog()
         }
 
@@ -187,7 +229,7 @@ class MainActivity : AppCompatActivity() {
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         spWorkoutType.adapter = adapter
 
-        val dialog = AlertDialog.Builder(this)
+        val dialog = AlertDialog.Builder(this, R.style.AlertDialogTheme)
             .setTitle("Add New Workout")
             .setView(dialogView)
             .setPositiveButton("Save") { dialogInterface, which ->
@@ -229,7 +271,6 @@ class MainActivity : AppCompatActivity() {
         notes: String,
         date: String
     ) {
-        // Validation
         if (type.isEmpty()) {
             Toast.makeText(this, "Please select workout type", Toast.LENGTH_SHORT).show()
             return
@@ -256,7 +297,6 @@ class MainActivity : AppCompatActivity() {
         val calories = caloriesStr.toIntOrNull() ?: 0
         val timestamp = System.currentTimeMillis()
 
-        // 1. Save to local SQLite database
         val workout = Workout(
             userId = userId,
             type = type,
@@ -273,8 +313,6 @@ class MainActivity : AppCompatActivity() {
 
         if (localId > 0) {
             val savedWorkout = workout.copy(id = localId.toInt())
-
-            // 2. Immediately try to save to server
             saveToServer(savedWorkout, userId)
 
             Toast.makeText(this, "$type workout added!", Toast.LENGTH_SHORT).show()
@@ -306,7 +344,6 @@ class MainActivity : AppCompatActivity() {
                 if (response.isSuccessful) {
                     response.body()?.let { apiResponse ->
                         if (apiResponse.success) {
-                            // Mark as synced in local database
                             dbHelper.updateWorkoutSyncStatus(workout.id, true)
                             Log.d(TAG, "Workout ${workout.id} synced to server successfully")
                         } else {
@@ -320,7 +357,6 @@ class MainActivity : AppCompatActivity() {
 
             override fun onFailure(call: Call<org.hak.fitnesstrackerapp.model.ApiResponse>, t: Throwable) {
                 Log.e(TAG, "Network error: ${t.message}")
-                // Keep as unsynced, will try again later
             }
         })
     }
@@ -329,6 +365,7 @@ class MainActivity : AppCompatActivity() {
         super.onResume()
         loadTodayStats()
         loadRecentWorkouts()
+        bottomNavigation.selectedItemId = R.id.nav_home
     }
 
     override fun onDestroy() {
