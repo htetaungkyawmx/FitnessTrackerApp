@@ -1,170 +1,153 @@
 package org.hak.fitnesstrackerapp.ui
 
-import android.app.DatePickerDialog
+import android.content.Intent
 import android.os.Bundle
+import android.view.MenuItem
 import android.widget.ArrayAdapter
 import android.widget.Button
-import android.widget.EditText
 import android.widget.Spinner
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
 import org.hak.fitnesstrackerapp.R
+import org.hak.fitnesstrackerapp.adapters.WorkoutAdapter
 import org.hak.fitnesstrackerapp.database.SQLiteHelper
-import org.hak.fitnesstrackerapp.model.Workout
-import org.hak.fitnesstrackerapp.network.RetrofitClient
 import org.hak.fitnesstrackerapp.utils.SharedPrefManager
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
-import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Locale
 
 class WorkoutLogActivity : AppCompatActivity() {
-    private lateinit var spinnerType: Spinner
-    private lateinit var etDuration: EditText
-    private lateinit var etDistance: EditText
-    private lateinit var etCalories: EditText
-    private lateinit var etNotes: EditText
-    private lateinit var tvDate: TextView
-    private lateinit var btnDate: Button
-    private lateinit var btnSave: Button
     private lateinit var dbHelper: SQLiteHelper
-
-    private var selectedDate = Calendar.getInstance()
+    private lateinit var tvTotalWorkouts: TextView
+    private lateinit var tvTotalDuration: TextView
+    private lateinit var tvTotalCalories: TextView
+    private lateinit var recyclerView: androidx.recyclerview.widget.RecyclerView
+    private lateinit var emptyStateView: android.view.View
+    private lateinit var btnAddWorkout: Button
+    private lateinit var spSort: Spinner
+    private lateinit var workoutAdapter: WorkoutAdapter
+    private var currentUserId: Int = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_workout_log)
 
+        setSupportActionBar(findViewById(R.id.toolbar))
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+
         dbHelper = SQLiteHelper(this)
 
-        spinnerType = findViewById(R.id.spinnerType)
-        etDuration = findViewById(R.id.etDuration)
-        etDistance = findViewById(R.id.etDistance)
-        etCalories = findViewById(R.id.etCalories)
-        etNotes = findViewById(R.id.etNotes)
-        tvDate = findViewById(R.id.tvDate)
-        btnDate = findViewById(R.id.btnDate)
-        btnSave = findViewById(R.id.btnSave)
-
-        // Setup workout type spinner
-        ArrayAdapter.createFromResource(
-            this,
-            R.array.workout_types,
-            android.R.layout.simple_spinner_item
-        ).also { adapter ->
-            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-            spinnerType.adapter = adapter
-        }
-
-        // Setup date picker
-        updateDateDisplay()
-        btnDate.setOnClickListener {
-            showDatePicker()
-        }
-
-        btnSave.setOnClickListener {
-            saveWorkout()
-        }
-    }
-
-    private fun showDatePicker() {
-        DatePickerDialog(
-            this,
-            { _, year, month, day ->
-                selectedDate.set(year, month, day)
-                updateDateDisplay()
-            },
-            selectedDate.get(Calendar.YEAR),
-            selectedDate.get(Calendar.MONTH),
-            selectedDate.get(Calendar.DAY_OF_MONTH)
-        ).show()
-    }
-
-    private fun updateDateDisplay() {
-        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-        tvDate.text = dateFormat.format(selectedDate.time)
-    }
-
-    private fun saveWorkout() {
-        val type = spinnerType.selectedItem.toString()
-        val duration = etDuration.text.toString().toIntOrNull() ?: 0
-        val distance = etDistance.text.toString().toDoubleOrNull() ?: 0.0
-        val calories = etCalories.text.toString().toIntOrNull() ?: 0
-        val notes = etNotes.text.toString()
-        val date = tvDate.text.toString()
-        val userId = SharedPrefManager.getInstance(this).user?.id ?: 0
-
-        if (duration <= 0) {
-            Toast.makeText(this, "Please enter duration", Toast.LENGTH_SHORT).show()
+        val user = SharedPrefManager.getInstance(this).user
+        if (user != null) {
+            currentUserId = user.id
+        } else {
+            finish()
             return
         }
 
-        if (type == "Running" || type == "Cycling") {
-            if (distance <= 0) {
-                Toast.makeText(this, "Please enter distance", Toast.LENGTH_SHORT).show()
-                return
-            }
-        }
+        initViews()
+        setupRecyclerView()
+        setupSortSpinner()
+        loadWorkoutData()
 
-        // Save to local database
-        val workout = Workout(
-            userId = userId,
-            type = type,
-            duration = duration,
-            distance = if (distance > 0) distance else null,
-            calories = calories,
-            notes = notes,
-            date = date,
-            synced = false
-        )
-
-        // Insert into SQLite
-        val workoutId = dbHelper.insertWorkout(workout)
-
-        if (workoutId != -1L) {
-            // Update workout with ID
-            val savedWorkout = workout.copy(id = workoutId.toInt())
-
-            // Try to sync with server
-            syncWithServer(savedWorkout, userId)
-
-            Toast.makeText(this, "Workout saved!", Toast.LENGTH_SHORT).show()
+        btnAddWorkout.setOnClickListener {
+            startActivity(Intent(this, MainActivity::class.java))
             finish()
-        } else {
-            Toast.makeText(this, "Failed to save workout", Toast.LENGTH_SHORT).show()
         }
     }
 
-    private fun syncWithServer(workout: Workout, userId: Int) {
-        val workoutRequest = org.hak.fitnesstrackerapp.model.WorkoutRequest(
-            userId = userId,
-            type = workout.type,
-            duration = workout.duration,
-            distance = workout.distance,
-            calories = workout.calories,
-            notes = workout.notes,
-            date = workout.date
-        )
+    private fun initViews() {
+        tvTotalWorkouts = findViewById(R.id.tvTotalWorkouts)
+        tvTotalDuration = findViewById(R.id.tvTotalDuration)
+        tvTotalCalories = findViewById(R.id.tvTotalCalories)
+        recyclerView = findViewById(R.id.recyclerViewWorkouts)
+        emptyStateView = findViewById(R.id.emptyStateView)
+        btnAddWorkout = findViewById(R.id.btnAddWorkout)
+        spSort = findViewById(R.id.spSort)
+    }
 
-        val call = RetrofitClient.instance.addWorkout(workoutRequest)
-        call.enqueue(object : Callback<org.hak.fitnesstrackerapp.model.ApiResponse> {
-            override fun onResponse(
-                call: Call<org.hak.fitnesstrackerapp.model.ApiResponse>,
-                response: Response<org.hak.fitnesstrackerapp.model.ApiResponse>
-            ) {
-                if (response.isSuccessful && response.body()?.success == true) {
-                    // Mark as synced
-                    dbHelper.updateWorkoutSyncStatus(workout.id, true)
-                }
+    private fun setupRecyclerView() {
+        workoutAdapter = WorkoutAdapter(emptyList()) { workout ->
+            val intent = Intent(this, WorkoutDetailActivity::class.java)
+            intent.putExtra("WORKOUT_ID", workout.id)
+            startActivity(intent)
+        }
+
+        recyclerView.layoutManager = LinearLayoutManager(this)
+        recyclerView.adapter = workoutAdapter
+    }
+
+    private fun setupSortSpinner() {
+        val sortOptions = arrayOf("Newest First", "Oldest First", "Duration (High to Low)", "Calories (High to Low)")
+        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, sortOptions)
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        spSort.adapter = adapter
+
+        spSort.onItemSelectedListener = object : android.widget.AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: android.widget.AdapterView<*>?, view: android.view.View?, position: Int, id: Long) {
+                loadWorkoutData()
             }
 
-            override fun onFailure(call: Call<org.hak.fitnesstrackerapp.model.ApiResponse>, t: Throwable) {
-                // Keep as unsynced for later sync
+            override fun onNothingSelected(parent: android.widget.AdapterView<*>?) {}
+        }
+    }
+
+    private fun loadWorkoutData() {
+        if (currentUserId == 0) return
+
+        val allWorkouts = dbHelper.getAllWorkouts(currentUserId)
+
+        val sortedWorkouts = when (spSort.selectedItemPosition) {
+            0 -> allWorkouts.sortedByDescending { it.timestamp }
+            1 -> allWorkouts.sortedBy { it.timestamp }
+            2 -> allWorkouts.sortedByDescending { it.duration }
+            3 -> allWorkouts.sortedByDescending { it.calories }
+            else -> allWorkouts
+        }
+
+        val totalWorkouts = dbHelper.getTotalWorkoutsCount(currentUserId)
+        val totalDuration = dbHelper.getTotalDuration(currentUserId)
+        val totalCalories = dbHelper.getTotalCalories(currentUserId)
+
+        tvTotalWorkouts.text = totalWorkouts.toString()
+        tvTotalDuration.text = totalDuration.toString()
+        tvTotalCalories.text = totalCalories.toString()
+
+        if (sortedWorkouts.isEmpty()) {
+            showEmptyState()
+        } else {
+            showWorkoutList()
+            workoutAdapter.updateData(sortedWorkouts)
+        }
+    }
+
+    private fun showEmptyState() {
+        recyclerView.visibility = android.view.View.GONE
+        emptyStateView.visibility = android.view.View.VISIBLE
+    }
+
+    private fun showWorkoutList() {
+        recyclerView.visibility = android.view.View.VISIBLE
+        emptyStateView.visibility = android.view.View.GONE
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            android.R.id.home -> {
+                onBackPressed()
+                true
             }
-        })
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+
+    override fun onBackPressed() {
+        super.onBackPressed()
+        startActivity(Intent(this, MainActivity::class.java))
+        finish()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        loadWorkoutData()
     }
 
     override fun onDestroy() {
