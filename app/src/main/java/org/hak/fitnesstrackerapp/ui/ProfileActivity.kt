@@ -37,6 +37,7 @@ class ProfileActivity : AppCompatActivity() {
     private lateinit var btnGoals: Button
     private lateinit var dbHelper: SQLiteHelper
     private val TAG = "ProfileActivity"
+    private var currentUserId: Int = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -107,6 +108,8 @@ class ProfileActivity : AppCompatActivity() {
         val user = SharedPrefManager.getInstance(this).user
 
         if (user != null && user.id != 0 && user.name.isNotEmpty()) {
+            currentUserId = user.id
+
             // Set profile initial (first letter of name)
             val initial = if (user.name.isNotEmpty()) user.name[0].uppercaseChar().toString() else "U"
             tvProfileInitial.text = initial
@@ -190,10 +193,15 @@ class ProfileActivity : AppCompatActivity() {
 
     private fun loadStatistics() {
         try {
-            val workouts = dbHelper.getAllWorkouts()
-            val totalWorkouts = workouts.size
-            val totalDuration = workouts.sumOf { it.duration }
-            val totalCalories = workouts.sumOf { it.calories }
+            if (currentUserId == 0) {
+                Toast.makeText(this, "Please login first", Toast.LENGTH_SHORT).show()
+                return
+            }
+
+            // Use the new functions with userId parameter
+            val totalWorkouts = dbHelper.getTotalWorkoutsCount(currentUserId)
+            val totalDuration = dbHelper.getTotalDuration(currentUserId)
+            val totalCalories = dbHelper.getTotalCalories(currentUserId)
 
             tvTotalWorkouts.text = totalWorkouts.toString()
             tvTotalDuration.text = totalDuration.toString()
@@ -205,9 +213,9 @@ class ProfileActivity : AppCompatActivity() {
     }
 
     private fun syncWithServer() {
-        val userId = SharedPrefManager.getInstance(this).user?.id ?: return
+        if (currentUserId == 0) return
 
-        val unsyncedWorkouts = dbHelper.getUnsyncedWorkouts()
+        val unsyncedWorkouts = dbHelper.getUnsyncedWorkouts(currentUserId)
 
         if (unsyncedWorkouts.isEmpty()) {
             Toast.makeText(this, "✓ All data is already synced", Toast.LENGTH_SHORT).show()
@@ -218,7 +226,7 @@ class ProfileActivity : AppCompatActivity() {
 
         // Prepare sync data
         val syncData = HashMap<String, Any>()
-        syncData["userId"] = userId
+        syncData["userId"] = currentUserId
         syncData["workouts"] = unsyncedWorkouts.map { workout ->
             val workoutMap = HashMap<String, Any>()
             workoutMap["type"] = workout.type

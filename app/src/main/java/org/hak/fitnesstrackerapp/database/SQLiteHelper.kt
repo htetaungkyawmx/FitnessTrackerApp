@@ -139,7 +139,6 @@ class SQLiteHelper(context: Context) : SQLiteOpenHelper(
         val db = this.writableDatabase
         val values = ContentValues()
 
-        // FIX: Ensure password is not null
         val password = user.password ?: ""
 
         Log.d(TAG, "Inserting user: ${user.email}, Password length: ${password.length}")
@@ -323,15 +322,18 @@ class SQLiteHelper(context: Context) : SQLiteOpenHelper(
         db.close()
         return id
     }
-
-    fun getAllWorkouts(): List<Workout> {
+    fun getAllWorkouts(userId: Int): List<Workout> {
         val workouts = ArrayList<Workout>()
         val db = this.readableDatabase
+
+        val selection = "$COLUMN_WORKOUT_USER_ID = ?"
+        val selectionArgs = arrayOf(userId.toString())
+
         val cursor = db.query(
             TABLE_WORKOUTS,
             null,
-            null,
-            null,
+            selection,
+            selectionArgs,
             null,
             null,
             "$COLUMN_DATE DESC, $COLUMN_TIMESTAMP DESC"
@@ -359,15 +361,14 @@ class SQLiteHelper(context: Context) : SQLiteOpenHelper(
         db.close()
         return workouts
     }
-
-    fun getUnsyncedWorkouts(): List<Workout> {
+    fun getUnsyncedWorkouts(userId: Int): List<Workout> {
         val workouts = ArrayList<Workout>()
         val db = this.readableDatabase
         val cursor = db.query(
             TABLE_WORKOUTS,
             null,
-            "$COLUMN_SYNCED = ?",
-            arrayOf("0"),
+            "$COLUMN_SYNCED = ? AND $COLUMN_WORKOUT_USER_ID = ?",
+            arrayOf("0", userId.toString()),
             null,
             null,
             "$COLUMN_TIMESTAMP ASC"
@@ -395,12 +396,11 @@ class SQLiteHelper(context: Context) : SQLiteOpenHelper(
         db.close()
         return workouts
     }
-
-    fun getDailyDuration(date: String): Int {
+    fun getDailyDuration(userId: Int, date: String): Int {
         val db = this.readableDatabase
         val cursor = db.rawQuery(
-            "SELECT SUM($COLUMN_DURATION) FROM $TABLE_WORKOUTS WHERE $COLUMN_DATE = ?",
-            arrayOf(date)
+            "SELECT SUM($COLUMN_DURATION) FROM $TABLE_WORKOUTS WHERE $COLUMN_DATE = ? AND $COLUMN_WORKOUT_USER_ID = ?",
+            arrayOf(date, userId.toString())
         )
 
         var duration = 0
@@ -411,12 +411,11 @@ class SQLiteHelper(context: Context) : SQLiteOpenHelper(
         db.close()
         return duration
     }
-
-    fun getWeeklyCalories(startDate: String, endDate: String): Int {
+    fun getWeeklyCalories(userId: Int, startDate: String, endDate: String): Int {
         val db = this.readableDatabase
         val cursor = db.rawQuery(
-            "SELECT SUM($COLUMN_CALORIES) FROM $TABLE_WORKOUTS WHERE $COLUMN_DATE BETWEEN ? AND ?",
-            arrayOf(startDate, endDate)
+            "SELECT SUM($COLUMN_CALORIES) FROM $TABLE_WORKOUTS WHERE $COLUMN_DATE BETWEEN ? AND ? AND $COLUMN_WORKOUT_USER_ID = ?",
+            arrayOf(startDate, endDate, userId.toString())
         )
 
         var calories = 0

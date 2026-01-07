@@ -43,6 +43,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var dbHelper: SQLiteHelper
     private var showingAllWorkouts = false
     private val TAG = "MainActivity"
+    private var currentUserId: Int = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -70,6 +71,15 @@ class MainActivity : AppCompatActivity() {
         fabAddWorkout = findViewById(R.id.fabAddWorkout)
 
         dbHelper = SQLiteHelper(this)
+
+        // Get current user ID from SharedPreferences
+        val user = SharedPrefManager.getInstance(this).user
+        if (user != null) {
+            currentUserId = user.id
+        } else {
+            Toast.makeText(this, "Please login first", Toast.LENGTH_SHORT).show()
+            navigateToLogin()
+        }
     }
 
     private fun setupBottomNavigation() {
@@ -120,8 +130,14 @@ class MainActivity : AppCompatActivity() {
 
     private fun loadData() {
         val user = SharedPrefManager.getInstance(this).user
+        if (user == null) {
+            Toast.makeText(this, "Please login first", Toast.LENGTH_SHORT).show()
+            navigateToLogin()
+            return
+        }
+
         tvWelcome.text = "Welcome back"
-        tvUserName.text = user?.name ?: "User"
+        tvUserName.text = user.name
 
         loadTodayStats()
         loadRecentWorkouts()
@@ -129,9 +145,11 @@ class MainActivity : AppCompatActivity() {
 
     private fun loadTodayStats() {
         try {
+            if (currentUserId == 0) return
+
             val today = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
-            val duration = dbHelper.getDailyDuration(today)
-            val calories = dbHelper.getWeeklyCalories(today, today)
+            val duration = dbHelper.getDailyDuration(currentUserId, today)
+            val calories = dbHelper.getWeeklyCalories(currentUserId, today, today)
             val activeEnergy = if (calories > 0) (calories * 0.85).toInt() else 0
 
             tvDuration.text = duration.toString()
@@ -147,7 +165,9 @@ class MainActivity : AppCompatActivity() {
 
     private fun loadRecentWorkouts() {
         try {
-            val workouts = dbHelper.getAllWorkouts()
+            if (currentUserId == 0) return
+
+            val workouts = dbHelper.getAllWorkouts(currentUserId)
 
             if (workouts.isEmpty()) {
                 showEmptyState()
@@ -197,7 +217,9 @@ class MainActivity : AppCompatActivity() {
         }
 
         tvSeeAll.setOnClickListener {
-            val workouts = dbHelper.getAllWorkouts()
+            if (currentUserId == 0) return@setOnClickListener
+
+            val workouts = dbHelper.getAllWorkouts(currentUserId)
             if (workouts.isNotEmpty()) {
                 showingAllWorkouts = !showingAllWorkouts
                 loadRecentWorkouts()
@@ -271,6 +293,11 @@ class MainActivity : AppCompatActivity() {
         notes: String,
         date: String
     ) {
+        if (currentUserId == 0) {
+            Toast.makeText(this, "Please login first", Toast.LENGTH_SHORT).show()
+            return
+        }
+
         if (type.isEmpty()) {
             Toast.makeText(this, "Please select workout type", Toast.LENGTH_SHORT).show()
             return
@@ -291,14 +318,13 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
-        val userId = SharedPrefManager.getInstance(this).user?.id ?: 1
         val duration = durationStr.toIntOrNull() ?: 0
         val distance = distanceStr.toDoubleOrNull()
         val calories = caloriesStr.toIntOrNull() ?: 0
         val timestamp = System.currentTimeMillis()
 
         val workout = Workout(
-            userId = userId,
+            userId = currentUserId,
             type = type,
             duration = duration,
             distance = distance,
@@ -313,7 +339,7 @@ class MainActivity : AppCompatActivity() {
 
         if (localId > 0) {
             val savedWorkout = workout.copy(id = localId.toInt())
-            saveToServer(savedWorkout, userId)
+            saveToServer(savedWorkout, currentUserId)
 
             Toast.makeText(this, "$type workout added!", Toast.LENGTH_SHORT).show()
             loadTodayStats()
@@ -361,8 +387,24 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
+    private fun navigateToLogin() {
+        val intent = Intent(this, LoginActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        startActivity(intent)
+        finish()
+    }
+
     override fun onResume() {
         super.onResume()
+        // Refresh current user ID
+        val user = SharedPrefManager.getInstance(this).user
+        currentUserId = user?.id ?: 0
+
+        if (currentUserId == 0) {
+            navigateToLogin()
+            return
+        }
+
         loadTodayStats()
         loadRecentWorkouts()
         bottomNavigation.selectedItemId = R.id.nav_home
