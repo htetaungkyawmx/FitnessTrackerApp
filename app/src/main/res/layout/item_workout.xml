@@ -30,7 +30,7 @@
                 android:text="Running"
                 android:textSize="18sp"
                 android:textStyle="bold"
-                android:textColor="@color/text_primary"/>
+                android:textColor="@color/text_secondary"/>
 
             <TextView
                 android:id="@+id/tvDate"
@@ -53,7 +53,7 @@
                 android:layout_weight="1"
                 android:text="30 min"
                 android:textSize="16sp"
-                android:textColor="@color/text_primary"/>
+                android:textColor="@color/text_secondary"/>
 
             <TextView
                 android:id="@+id/tvCalories"

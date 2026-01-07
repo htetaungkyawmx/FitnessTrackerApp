@@ -10,7 +10,7 @@
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        android:background="@color/primary"
+        android:background="@color/gray_dark"
         android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
         app:title="Profile"
         app:titleTextColor="@color/white"
@@ -19,7 +19,8 @@
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:padding="16dp">
+        android:padding="16dp"
+        >
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -36,76 +37,77 @@
                 android:layout_marginBottom="20dp">
 
                 <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_width="382dp"
+                    android:layout_height="match_parent"
+                    android:background="@color/gray_dark"
+                    android:gravity="center"
                     android:orientation="vertical"
-                    android:padding="24dp"
-                    android:gravity="center">
+                    android:padding="24dp">
 
                     <!-- Profile Initial Circle -->
                     <TextView
                         android:id="@+id/tvProfileInitial"
                         android:layout_width="60dp"
                         android:layout_height="60dp"
-                        android:text="J"
-                        android:textSize="24sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/white"
-                        android:gravity="center"
+                        android:layout_marginBottom="12dp"
                         android:background="@drawable/circle_background"
-                        android:layout_marginBottom="12dp"/>
+                        android:gravity="center"
+                        android:text="J"
+                        android:textColor="@color/white"
+                        android:textSize="24sp"
+                        android:textStyle="bold" />
 
                     <!-- Name and Email -->
                     <TextView
                         android:id="@+id/tvName"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginBottom="4dp"
                         android:text="John Doe"
-                        android:textSize="24sp"
-                        android:textStyle="bold"
                         android:textColor="@color/white"
-                        android:layout_marginBottom="4dp"/>
+                        android:textSize="24sp"
+                        android:textStyle="bold" />
 
                     <TextView
                         android:id="@+id/tvEmail"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="john@gmail.com"
-                        android:textSize="14sp"
-                        android:textColor="@color/white"
+                        android:layout_marginBottom="20dp"
                         android:alpha="0.8"
-                        android:layout_marginBottom="20dp"/>
+                        android:text="john@gmail.com"
+                        android:textColor="@color/white"
+                        android:textSize="14sp" />
 
                     <!-- Action Buttons -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center">
+                        android:gravity="center"
+                        android:orientation="horizontal">
 
                         <Button
                             android:id="@+id/btnEdit"
                             android:layout_width="0dp"
                             android:layout_height="40dp"
-                            android:layout_weight="1"
                             android:layout_marginEnd="8dp"
-                            android:text="Edit Profile"
-                            android:textSize="12sp"
+                            android:layout_weight="1"
+                            android:background="@drawable/btn_outline"
                             android:backgroundTint="@color/white"
-                            android:textColor="@color/primary_light"
-                            android:background="@drawable/btn_outline"/>
+                            android:text="Edit Profile"
+                            android:textColor="@color/primary_dark"
+                            android:textSize="12sp" />
 
                         <Button
                             android:id="@+id/btnGoals"
                             android:layout_width="0dp"
                             android:layout_height="40dp"
-                            android:layout_weight="1"
                             android:layout_marginStart="8dp"
-                            android:text="My Goals"
-                            android:textSize="12sp"
+                            android:layout_weight="1"
+                            android:background="@drawable/btn_outline"
                             android:backgroundTint="@color/white"
-                            android:textColor="@color/primary_light"
-                            android:background="@drawable/btn_outline"/>
+                            android:text="My Goals"
+                            android:textColor="@color/primary_dark"
+                            android:textSize="12sp" />
 
                     </LinearLayout>
 
@@ -256,7 +258,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="20dp">
+                    android:padding="20dp"
+                    android:background="@color/gray_dark">
 
                     <!-- Age -->
                     <LinearLayout
@@ -379,22 +382,24 @@
                     android:id="@+id/btnSync"
                     android:layout_width="match_parent"
                     android:layout_height="48dp"
-                    android:text="SYNC DATA"
+                    android:text="Sync Data"
                     android:textSize="14sp"
                     android:textStyle="bold"
-                    android:backgroundTint="@color/teal_700"
+                    android:backgroundTint="@color/accent"
                     android:textColor="@color/white"
+                    android:textAllCaps="false"
                     android:layout_marginBottom="8dp"/>
 
                 <Button
                     android:id="@+id/btnLogout"
                     android:layout_width="match_parent"
                     android:layout_height="48dp"
-                    android:text="LOGOUT"
+                    android:text="LogOut"
                     android:textSize="14sp"
                     android:textStyle="bold"
-                    android:backgroundTint="@color/teal_700"
-                    android:textColor="@color/error" />
+                    android:backgroundTint="@color/error"
+                    android:textAllCaps="false"
+                    android:textColor="@color/white" />
 
             </LinearLayout>
 

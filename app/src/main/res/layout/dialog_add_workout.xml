@@ -2,7 +2,8 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="16dp">
+    android:padding="16dp"
+    android:background="@color/gray_dark">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -16,6 +17,7 @@
             android:layout_height="wrap_content"
             android:text="Workout Type *"
             android:textSize="14sp"
+            android:textColor="@android:color/darker_gray"
             android:textStyle="bold"
             android:layout_marginBottom="4dp"/>
 
@@ -32,6 +34,7 @@
             android:layout_height="wrap_content"
             android:text="Duration (minutes) *"
             android:textSize="14sp"
+            android:textColor="@android:color/darker_gray"
             android:textStyle="bold"
             android:layout_marginBottom="4dp"/>
 
@@ -52,6 +55,7 @@
             android:layout_height="wrap_content"
             android:text="Distance (km) - Optional"
             android:textSize="14sp"
+            android:textColor="@android:color/darker_gray"
             android:textStyle="bold"
             android:layout_marginBottom="4dp"/>
 
@@ -72,6 +76,7 @@
             android:layout_height="wrap_content"
             android:text="Calories Burned *"
             android:textSize="14sp"
+            android:textColor="@android:color/darker_gray"
             android:textStyle="bold"
             android:layout_marginBottom="4dp"/>
 
@@ -92,6 +97,7 @@
             android:layout_height="wrap_content"
             android:text="Date *"
             android:textSize="14sp"
+            android:textColor="@android:color/darker_gray"
             android:textStyle="bold"
             android:layout_marginBottom="4dp"/>
 
@@ -114,6 +120,7 @@
             android:layout_height="wrap_content"
             android:text="Notes - Optional"
             android:textSize="14sp"
+            android:textColor="@android:color/darker_gray"
             android:textStyle="bold"
             android:layout_marginBottom="4dp"/>
 
@@ -130,14 +137,6 @@
             android:paddingEnd="12dp"
             android:paddingBottom="12dp"
             android:layout_marginBottom="8dp"/>
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="* Required fields"
-            android:textSize="12sp"
-            android:textColor="@android:color/darker_gray"
-            android:layout_marginTop="8dp"/>
 
     </LinearLayout>
 

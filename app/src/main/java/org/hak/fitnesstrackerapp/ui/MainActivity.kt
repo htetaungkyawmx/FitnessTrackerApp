@@ -136,7 +136,7 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
-        tvWelcome.text = "Welcome back"
+        tvWelcome.text = "Welcome Back,"
         tvUserName.text = user.name
 
         loadTodayStats()
