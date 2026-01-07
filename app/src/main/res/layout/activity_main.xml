@@ -296,9 +296,8 @@
                             <ImageView
                                 android:layout_width="40dp"
                                 android:layout_height="40dp"
-                                android:src="@drawable/ic_running"
-                                android:layout_marginBottom="12dp"
-                                app:tint="@color/workout_running" />
+                                android:src="@mipmap/running"
+                                android:layout_marginBottom="12dp"/>
 
                             <TextView
                                 android:layout_width="wrap_content"
@@ -331,9 +330,8 @@
                             <ImageView
                                 android:layout_width="40dp"
                                 android:layout_height="40dp"
-                                android:src="@drawable/ic_cycling"
-                                android:layout_marginBottom="12dp"
-                                app:tint="@color/workout_cycling" />
+                                android:src="@mipmap/cycling"
+                                android:layout_marginBottom="12dp"/>
 
                             <TextView
                                 android:layout_width="wrap_content"
@@ -366,9 +364,8 @@
                             <ImageView
                                 android:layout_width="40dp"
                                 android:layout_height="40dp"
-                                android:src="@drawable/ic_swimming"
-                                android:layout_marginBottom="12dp"
-                                app:tint="@color/workout_swimming" />
+                                android:src="@mipmap/swimming"
+                                android:layout_marginBottom="12dp"/>
 
                             <TextView
                                 android:layout_width="wrap_content"
@@ -401,9 +398,8 @@
                             <ImageView
                                 android:layout_width="40dp"
                                 android:layout_height="40dp"
-                                android:src="@drawable/ic_yoga"
-                                android:layout_marginBottom="12dp"
-                                app:tint="@color/workout_yoga" />
+                                android:src="@mipmap/yoga"
+                                android:layout_marginBottom="12dp"/>
 
                             <TextView
                                 android:layout_width="wrap_content"
@@ -436,9 +432,8 @@
                             <ImageView
                                 android:layout_width="40dp"
                                 android:layout_height="40dp"
-                                android:src="@drawable/ic_strength"
-                                android:layout_marginBottom="12dp"
-                                app:tint="@color/workout_strength" />
+                                android:src="@mipmap/strength"
+                                android:layout_marginBottom="12dp"/>
 
                             <TextView
                                 android:layout_width="wrap_content"
@@ -471,9 +466,8 @@
                             <ImageView
                                 android:layout_width="40dp"
                                 android:layout_height="40dp"
-                                android:src="@drawable/ic_hiit"
-                                android:layout_marginBottom="12dp"
-                                app:tint="@color/workout_hiit" />
+                                android:src="@mipmap/hiit"
+                                android:layout_marginBottom="12dp"/>
 
                             <TextView
                                 android:layout_width="wrap_content"
