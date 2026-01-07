@@ -10,7 +10,7 @@
     <color name="teal_700">#007AFF</color> <!-- Bright Blue -->
 
     <!-- Basic Colors -->
-    <color name="black">#FF000000</color>
+    <color name="black">#000000</color>  <!-- Changed from green to actual black -->
     <color name="white">#FFFFFFFF</color>
 
     <!-- Add these colors for your app -->
@@ -24,45 +24,64 @@
 
     <color name="accent">#FF9500</color> <!-- Vibrant Orange -->
 
-    <!-- Background colors -->
-    <color name="background">#F8F9FA</color>
-    <color name="surface">#FFFFFF</color>
+    <!-- Background colors - Updated for dark theme fitness app -->
+    <color name="background">#000000</color>  <!-- Pure Black -->
+    <color name="surface">#1C1C1E</color>    <!-- Dark Gray -->
 
-    <!-- Text colors -->
-    <color name="text_primary">#1D1D1F</color>
-    <color name="text_secondary">#6D6D6F</color>
-    <color name="text_hint">#C7C7CC</color>
+    <!-- Text colors - Updated for dark theme -->
+    <color name="text_primary">#FFFFFF</color>  <!-- White -->
+    <color name="text_secondary">#8E8E93</color>  <!-- Light Gray -->
+    <color name="text_hint">#636366</color>  <!-- Medium Gray -->
 
     <!-- Additional colors -->
     <color name="gray">#8E8E93</color>
-    <color name="gray_light">#EFEFF4</color>
-    <color name="gray_dark">#48484A</color>
+    <color name="gray_light">#3A3A3C</color>  <!-- Dark Gray -->
+    <color name="gray_dark">#1C1C1E</color>  <!-- Very Dark Gray -->
 
-    <color name="outline">#C7C7CC</color>
+    <color name="outline">#38383A</color>  <!-- Divider Color -->
 
     <!-- Status colors -->
-    <color name="success">#34C759</color>
-    <color name="warning">#FF9500</color>
-    <color name="error">#FF3B30</color>
-    <color name="info">#007AFF</color>
+    <color name="success">#34C759</color>  <!-- Green -->
+    <color name="warning">#FF9500</color>  <!-- Orange -->
+    <color name="error">#FF3B30</color>  <!-- Red -->
+    <color name="info">#007AFF</color>  <!-- Blue -->
 
-    <color name="gradient_start">#8A2BE2</color>
-    <color name="gradient_end">#4B0082</color>
+    <!-- Gradient colors for fitness app -->
+    <color name="gradient_start">#0A84FF</color>  <!-- Blue gradient start -->
+    <color name="gradient_end">#34C759</color>  <!-- Green gradient end -->
+
+    <!-- Transparency Colors -->
     <color name="white_alpha_20">#33FFFFFF</color>
     <color name="white_alpha_40">#66FFFFFF</color>
     <color name="white_alpha_60">#99FFFFFF</color>
     <color name="white_alpha_80">#CCFFFFFF</color>
     <color name="white_alpha_30">#4DFFFFFF</color>
 
-    <color name="fitness_dark_bg">#000000</color>
-    <color name="fitness_card_bg">#1C1C1E</color>
-    <color name="fitness_light_gray">#8E8E93</color>
-    <color name="fitness_divider">#38383A</color>
-    <color name="fitness_blue">#007AFF</color>
-    <color name="fitness_red">#FF3B30</color>
-    <color name="fitness_orange">#FF9500</color>
-    <color name="fitness_green">#34C759</color>
-    <color name="fitness_yellow">#FFCC00</color>
-    <color name="fitness_purple">#AF52DE</color>
+    <!-- Fitness Specific Colors -->
+    <color name="fitness_dark_bg">#000000</color>  <!-- Black background -->
+    <color name="fitness_card_bg">#1C1C1E</color>  <!-- Card dark gray -->
+    <color name="fitness_light_gray">#8E8E93</color>  <!-- Text light gray -->
+    <color name="fitness_divider">#38383A</color>  <!-- Divider gray -->
+    <color name="fitness_blue">#007AFF</color>  <!-- iOS Blue -->
+    <color name="fitness_red">#FF3B30</color>  <!-- Energy Red -->
+    <color name="fitness_orange">#FF9500</color>  <!-- Activity Orange -->
+    <color name="fitness_green">#34C759</color>  <!-- Success Green -->
+    <color name="fitness_yellow">#FFCC00</color>  <!-- Warm Yellow -->
+    <color name="fitness_purple">#AF52DE</color>  <!-- Mindful Purple -->
 
+    <!-- Additional Fitness Colors -->
+    <color name="fitness_cyan">#5AC8FA</color>  <!-- Water/Cool Cyan -->
+    <color name="fitness_pink">#FF2D55</color>  <!-- Heart Rate Pink -->
+    <color name="fitness_dark_gray">#2C2C2E</color>  <!-- Alternative dark -->
+    <color name="fitness_light_bg">#F2F2F7</color>  <!-- Light mode bg -->
+
+    <!-- Workout Type Colors -->
+    <color name="workout_running">#FF3B30</color>  <!-- Running - Red -->
+    <color name="workout_cycling">#FF9500</color>  <!-- Cycling - Orange -->
+    <color name="workout_swimming">#007AFF</color>  <!-- Swimming - Blue -->
+    <color name="workout_yoga">#AF52DE</color>  <!-- Yoga - Purple -->
+    <color name="workout_strength">#34C759</color>  <!-- Strength - Green -->
+    <color name="workout_hiit">#FFCC00</color>  <!-- HIIT - Yellow -->
+    <color name="workout_walking">#5AC8FA</color>  <!-- Walking - Cyan -->
+    <color name="workout_meditation">#5856D6</color>  <!-- Meditation - Indigo -->
 </resources>
