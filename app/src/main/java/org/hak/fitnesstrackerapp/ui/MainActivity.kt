@@ -6,7 +6,11 @@ import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
-import android.widget.*
+import android.widget.ArrayAdapter
+import android.widget.EditText
+import android.widget.Spinner
+import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -24,7 +28,9 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 
 class MainActivity : AppCompatActivity() {
     private lateinit var tvWelcome: TextView
@@ -72,7 +78,6 @@ class MainActivity : AppCompatActivity() {
 
         dbHelper = SQLiteHelper(this)
 
-        // Get current user ID from SharedPreferences
         val user = SharedPrefManager.getInstance(this).user
         if (user != null) {
             currentUserId = user.id
@@ -83,28 +88,29 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupBottomNavigation() {
+        bottomNavigation.selectedItemId = R.id.nav_home
+
         bottomNavigation.setOnNavigationItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.nav_home -> {
-                    // Already on home
                     true
                 }
                 R.id.nav_workouts -> {
-                   /* val intent = Intent(this, WorkoutLogActivity::class.java)
+                    val intent = Intent(this, WorkoutLogActivity::class.java)
                     startActivity(intent)
-                    overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)*/
+                    overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
                     true
                 }
                 R.id.nav_goals -> {
-                    /*val intent = Intent(this, GoalsActivity::class.java)
+                    val intent = Intent(this, GoalsActivity::class.java)
                     startActivity(intent)
-                    overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)*/
+                    overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
                     true
                 }
                 R.id.nav_profile -> {
-                   /* val intent = Intent(this, ProfileActivity::class.java)
+                    val intent = Intent(this, ProfileActivity::class.java)
                     startActivity(intent)
-                    overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)*/
+                    overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
                     true
                 }
                 else -> false
@@ -227,6 +233,12 @@ class MainActivity : AppCompatActivity() {
                 Toast.makeText(this, "No workouts available", Toast.LENGTH_SHORT).show()
             }
         }
+
+        setupCategoryClickListeners()
+    }
+
+    private fun setupCategoryClickListeners() {
+
     }
 
     private fun showAddWorkoutDialog() {
@@ -396,7 +408,6 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        // Refresh current user ID
         val user = SharedPrefManager.getInstance(this).user
         currentUserId = user?.id ?: 0
 
@@ -407,10 +418,8 @@ class MainActivity : AppCompatActivity() {
 
         loadTodayStats()
         loadRecentWorkouts()
+
         bottomNavigation.selectedItemId = R.id.nav_home
-        bottomNavigation.selectedItemId = R.id.nav_workouts
-        bottomNavigation.selectedItemId = R.id.nav_goals
-        bottomNavigation.selectedItemId = R.id.nav_profile
     }
 
     override fun onDestroy() {

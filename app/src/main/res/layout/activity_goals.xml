@@ -4,14 +4,14 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@color/background">
+    android:background="@color/gray_dark">
 
     <!-- Toolbar -->
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        android:background="@color/primary"
+        android:background="@color/gray_dark"
         android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
         app:title="My Goals"
         app:titleTextColor="@color/white" />
@@ -20,17 +20,19 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:padding="16dp"
+        android:background="@color/black">
 
         <!-- Add Goal Button -->
         <Button
             android:id="@+id/btnAddGoal"
             android:layout_width="match_parent"
             android:layout_height="48dp"
-            android:text="+ Add New Goal"
+            android:text="Add New Goal"
+            android:textAllCaps="false"
             android:textSize="14sp"
             android:textStyle="bold"
-            android:backgroundTint="@color/primary"
+            android:backgroundTint="@color/gray_dark"
             android:textColor="@color/white"
             android:layout_marginBottom="16dp"/>
 
@@ -40,7 +42,8 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:layout_marginBottom="80dp"/>
+            android:layout_marginBottom="0dp"
+            android:background="@color/black"/>
 
         <!-- Empty State View -->
         <LinearLayout
@@ -82,6 +85,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Set First Goal"
+                android:textAllCaps="false"
                 android:backgroundTint="@color/primary"
                 android:textColor="@color/white"
                 android:paddingStart="24dp"

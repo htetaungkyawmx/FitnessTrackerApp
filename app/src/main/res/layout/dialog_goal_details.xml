@@ -89,6 +89,7 @@
         android:layout_height="wrap_content"
         android:text="Update Progress"
         android:layout_marginBottom="8dp"
+        android:textAllCaps="false"
         android:backgroundTint="@color/primary" />
 
     <Button
@@ -96,6 +97,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Delete Goal"
+        android:textAllCaps="false"
         android:backgroundTint="@color/error" />
 
 </LinearLayout>
