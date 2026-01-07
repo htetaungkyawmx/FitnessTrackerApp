@@ -8,13 +8,16 @@
     <item
         android:id="@+id/nav_workouts"
         android:icon="@drawable/ic_workout"
-        android:title="Workouts"/>
+        android:title="Workouts"
+        android:checked="true"/>
     <item
         android:id="@+id/nav_goals"
         android:icon="@drawable/ic_goals"
-        android:title="Goals"/>
+        android:title="Goals"
+        android:checked="true"/>
     <item
         android:id="@+id/nav_profile"
         android:icon="@drawable/ic_profile"
-        android:title="Profile"/>
+        android:title="Profile"
+        android:checked="true"/>
 </menu>

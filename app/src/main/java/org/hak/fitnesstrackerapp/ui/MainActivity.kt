@@ -90,21 +90,21 @@ class MainActivity : AppCompatActivity() {
                     true
                 }
                 R.id.nav_workouts -> {
-                    val intent = Intent(this, WorkoutLogActivity::class.java)
+                   /* val intent = Intent(this, WorkoutLogActivity::class.java)
                     startActivity(intent)
-                    overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+                    overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)*/
                     true
                 }
                 R.id.nav_goals -> {
-                    val intent = Intent(this, GoalsActivity::class.java)
+                    /*val intent = Intent(this, GoalsActivity::class.java)
                     startActivity(intent)
-                    overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+                    overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)*/
                     true
                 }
                 R.id.nav_profile -> {
-                    val intent = Intent(this, ProfileActivity::class.java)
+                   /* val intent = Intent(this, ProfileActivity::class.java)
                     startActivity(intent)
-                    overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+                    overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)*/
                     true
                 }
                 else -> false
@@ -408,6 +408,9 @@ class MainActivity : AppCompatActivity() {
         loadTodayStats()
         loadRecentWorkouts()
         bottomNavigation.selectedItemId = R.id.nav_home
+        bottomNavigation.selectedItemId = R.id.nav_workouts
+        bottomNavigation.selectedItemId = R.id.nav_goals
+        bottomNavigation.selectedItemId = R.id.nav_profile
     }
 
     override fun onDestroy() {
