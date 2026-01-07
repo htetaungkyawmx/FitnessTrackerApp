@@ -14,6 +14,10 @@ class WorkoutDetailActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_workout_detail)
 
+        setSupportActionBar(findViewById(R.id.toolbar))
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.title = "WorkOut Details"
+
         dbHelper = SQLiteHelper(this)
 
         val workoutId = intent.getIntExtra("WORKOUT_ID", -1)
@@ -61,6 +65,11 @@ class WorkoutDetailActivity : AppCompatActivity() {
 
         val syncStatusTextView = findViewById<TextView>(R.id.tvSyncStatus)
         syncStatusTextView.text = if (workout.synced) "Synced" else "Not Synced"
+    }
+
+    override fun onSupportNavigateUp(): Boolean {
+        onBackPressed()
+        return true
     }
 
     override fun onDestroy() {
