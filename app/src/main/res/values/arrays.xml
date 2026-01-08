@@ -3,10 +3,11 @@
     <string-array name="workout_types">
         <item>Running</item>
         <item>Cycling</item>
-        <item>Weightlifting</item>
         <item>Swimming</item>
-        <item>Yoga</item>
         <item>Walking</item>
+        <item>Weightlifting</item>
+        <item>Yoga</item>
+        <item>HIIT</item>
         <item>Other</item>
     </string-array>
 

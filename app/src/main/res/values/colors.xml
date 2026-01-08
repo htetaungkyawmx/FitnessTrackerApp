@@ -84,4 +84,14 @@
     <color name="workout_hiit">#FFCC00</color>  <!-- HIIT - Yellow -->
     <color name="workout_walking">#5AC8FA</color>  <!-- Walking - Cyan -->
     <color name="workout_meditation">#5856D6</color>  <!-- Meditation - Indigo -->
+
+    <!-- Map/GPS colors -->
+    <color name="map_primary">#FF5722</color>
+    <color name="map_secondary">#4CAF50</color>
+    <color name="map_tertiary">#2196F3</color>
+    <color name="gradient_mid">#FF9800</color>
+
+    <!-- Shimmer colors -->
+    <color name="shimmer_base">#2C2C2C</color>
+    <color name="shimmer_highlight">#3C3C3C</color>
 </resources>

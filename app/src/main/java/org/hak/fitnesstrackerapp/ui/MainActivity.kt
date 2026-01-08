@@ -238,10 +238,120 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupCategoryClickListeners() {
+        try {
+            findViewById<androidx.cardview.widget.CardView>(R.id.card_running).setOnClickListener {
+                handleWorkoutCategoryClick("Running", R.raw.running_animation, true)
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Running card not found: ${e.message}")
+        }
 
+        try {
+            findViewById<androidx.cardview.widget.CardView>(R.id.card_cycling).setOnClickListener {
+                handleWorkoutCategoryClick("Cycling", R.raw.cycling_animation, true)
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Cycling card not found: ${e.message}")
+        }
+
+        try {
+            findViewById<androidx.cardview.widget.CardView>(R.id.card_swimming).setOnClickListener {
+                handleWorkoutCategoryClick("Swimming", R.raw.swimming_animation, false)
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Swimming card not found: ${e.message}")
+        }
+
+        try {
+            findViewById<androidx.cardview.widget.CardView>(R.id.card_yoga).setOnClickListener {
+                handleWorkoutCategoryClick("Yoga", R.raw.yoga_animation, false)
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Yoga card not found: ${e.message}")
+        }
+
+        try {
+            findViewById<androidx.cardview.widget.CardView>(R.id.card_strength).setOnClickListener {
+                handleWorkoutCategoryClick("Strength", R.raw.strength_animation, false)
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Strength card not found: ${e.message}")
+        }
+
+        try {
+            findViewById<androidx.cardview.widget.CardView>(R.id.card_hiit).setOnClickListener {
+                handleWorkoutCategoryClick("HIIT", R.raw.hiit_animation, false)
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "HIIT card not found: ${e.message}")
+        }
+    }
+
+    private fun handleWorkoutCategoryClick(workoutType: String, animationRes: Int?, needsGPS: Boolean) {
+        if (currentUserId == 0) return
+        val actualWorkoutType = if (workoutType == "Strength") "Weightlifting" else workoutType
+        val actualAnimationRes = if (workoutType == "Strength") R.raw.strength_animation else animationRes
+
+        val hasWorkouts = dbHelper.hasWorkoutsByType(currentUserId, actualWorkoutType)
+
+        if (!hasWorkouts) {
+          showNoDataDialog(actualWorkoutType, actualAnimationRes, needsGPS)
+        } else {
+
+            if (needsGPS && (actualWorkoutType == "Running" || actualWorkoutType == "Cycling")) {
+               startOSMTrackingActivity(actualWorkoutType, actualAnimationRes)
+            } else {
+               startAnimationActivity(actualWorkoutType, actualAnimationRes)
+            }
+        }
+    }
+
+    private fun startOSMTrackingActivity(workoutType: String, animationRes: Int?) {
+        val intent = Intent(this, OSMTrackingActivity::class.java)
+        intent.putExtra("WORKOUT_TYPE", workoutType)
+        if (animationRes != null) {
+            intent.putExtra("ANIMATION_RES", animationRes)
+        }
+        startActivity(intent)
+        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+    }
+
+    private fun showNoDataDialog(workoutType: String, animationRes: Int?, needsGPS: Boolean) {
+        AlertDialog.Builder(this, R.style.AlertDialogTheme)
+            .setTitle("No $workoutType Data Found")
+            .setMessage("You don't have any $workoutType workouts yet. Please add your first workout data.")
+            .setPositiveButton("Add Now") { dialog, which ->
+                showAddWorkoutDialogWithType(workoutType)
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun startAnimationActivity(workoutType: String, animationRes: Int?) {
+        val intent = Intent(this, AnimationActivity::class.java)
+        intent.putExtra("WORKOUT_TYPE", workoutType)
+        if (animationRes != null) {
+            intent.putExtra("ANIMATION_RES", animationRes)
+        }
+        startActivity(intent)
+        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+    }
+
+    private fun startGPSTrackingActivity(workoutType: String, animationRes: Int?) {
+        val intent = Intent(this, GPSTrackingActivity::class.java)
+        intent.putExtra("WORKOUT_TYPE", workoutType)
+        if (animationRes != null) {
+            intent.putExtra("ANIMATION_RES", animationRes)
+        }
+        startActivity(intent)
+        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
     }
 
     private fun showAddWorkoutDialog() {
+        showAddWorkoutDialogWithType(null)
+    }
+
+    private fun showAddWorkoutDialogWithType(preSelectedType: String?) {
         val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_add_workout, null)
 
         val spWorkoutType = dialogView.findViewById<Spinner>(R.id.spWorkoutType)
@@ -262,6 +372,13 @@ class MainActivity : AppCompatActivity() {
         val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, workoutTypes)
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         spWorkoutType.adapter = adapter
+
+        preSelectedType?.let { type ->
+            val position = workoutTypes.indexOfFirst { it.equals(type, ignoreCase = true) }
+            if (position >= 0) {
+                spWorkoutType.setSelection(position)
+            }
+        }
 
         val dialog = AlertDialog.Builder(this, R.style.AlertDialogTheme)
             .setTitle("Add New Workout")

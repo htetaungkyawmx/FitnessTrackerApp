@@ -269,6 +269,7 @@
 
                 <!-- Category Grid -->
                 <GridLayout
+                    android:id="@+id/grid_categories"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:columnCount="2"
@@ -278,6 +279,7 @@
 
                     <!-- Running Card -->
                     <androidx.cardview.widget.CardView
+                        android:id="@+id/card_running"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_columnWeight="1"
@@ -312,6 +314,7 @@
 
                     <!-- Cycling Card -->
                     <androidx.cardview.widget.CardView
+                        android:id="@+id/card_cycling"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_columnWeight="1"
@@ -346,6 +349,7 @@
 
                     <!-- Swimming Card -->
                     <androidx.cardview.widget.CardView
+                        android:id="@+id/card_swimming"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_columnWeight="1"
@@ -380,6 +384,7 @@
 
                     <!-- Yoga Card -->
                     <androidx.cardview.widget.CardView
+                        android:id="@+id/card_yoga"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_columnWeight="1"
@@ -414,6 +419,7 @@
 
                     <!-- Strength Card -->
                     <androidx.cardview.widget.CardView
+                        android:id="@+id/card_strength"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_columnWeight="1"
@@ -448,6 +454,7 @@
 
                     <!-- HIIT Card -->
                     <androidx.cardview.widget.CardView
+                        android:id="@+id/card_hiit"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_columnWeight="1"

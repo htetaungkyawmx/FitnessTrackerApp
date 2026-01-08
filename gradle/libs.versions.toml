@@ -24,6 +24,7 @@ playServicesFitness = "21.3.0"
 roomCommonJvm = "2.8.4"
 roomRuntimeJvm = "2.8.4"
 roomRuntimeAndroid = "2.8.4"
+filamentAndroid = "1.17.1"
 
 [libraries]
 # Android Core
@@ -78,6 +79,7 @@ play-services-fitness = { group = "com.google.android.gms", name = "play-service
 room-common-jvm = { group = "androidx.room", name = "room-common-jvm", version.ref = "roomCommonJvm" }
 room-runtime-jvm = { group = "androidx.room", name = "room-runtime-jvm", version.ref = "roomRuntimeJvm" }
 room-runtime-android = { group = "androidx.room", name = "room-runtime-android", version.ref = "roomRuntimeAndroid" }
+filament-android = { group = "com.google.ar.sceneform", name = "filament-android", version.ref = "filamentAndroid" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version = "8.1.0" }
