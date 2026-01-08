@@ -58,33 +58,38 @@ class OSMTrackingActivity : AppCompatActivity() {
     private lateinit var tvTotalDuration: TextView
     private lateinit var noWorkoutsCard: androidx.cardview.widget.CardView
 
+    // GPS/Location
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var locationCallback: LocationCallback
     private var isTracking = false
     private var isPaused = false
 
-    private var totalDistance = 0.0f
+    // Stats
+    private var totalDistance = 0.0f // in meters
     private var startTime: Long = 0
     private var pauseTime: Long = 0
     private var totalPauseTime: Long = 0
     private val locations = mutableListOf<Location>()
     private var currentSpeed = 0.0f
 
+    // Handler for timer
     private lateinit var handler: Handler
     private lateinit var timerRunnable: Runnable
 
+    // Database
     private lateinit var dbHelper: SQLiteHelper
     private var currentUserId: Int = 0
     private var workoutType: String = ""
 
+    // Map overlay
     private lateinit var myLocationOverlay: MyLocationNewOverlay
     private lateinit var routeOverlay: Polyline
 
     companion object {
         private const val TAG = "OSMTrackingActivity"
         private const val LOCATION_PERMISSION_REQUEST_CODE = 1001
-        private const val UPDATE_INTERVAL = 1000L
-        private const val FASTEST_INTERVAL = 500L
+        private const val UPDATE_INTERVAL = 1000L // 1 second
+        private const val FASTEST_INTERVAL = 500L // 0.5 second
     }
 
     @SuppressLint("MissingInflatedId")
@@ -92,22 +97,28 @@ class OSMTrackingActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_gps_tracking)
 
+        // Keep screen on
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
+        // Get workout type from intent
         workoutType = intent.getStringExtra("WORKOUT_TYPE") ?: "Running"
         val animationRes = intent.getIntExtra("ANIMATION_RES", -1)
 
         Log.d(TAG, "Starting OSMTrackingActivity for workout type: $workoutType")
 
+        // Setup toolbar
         setSupportActionBar(findViewById(R.id.toolbar))
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.title = "$workoutType Tracking"
 
+        // Initialize OSM configuration
         Configuration.getInstance().load(this, getSharedPreferences("osm", MODE_PRIVATE))
         Configuration.getInstance().userAgentValue = packageName
 
+        // Initialize database
         dbHelper = SQLiteHelper(this)
 
+        // Get current user
         val user = SharedPrefManager.getInstance(this).user
         currentUserId = user?.id ?: 0
 
@@ -117,21 +128,29 @@ class OSMTrackingActivity : AppCompatActivity() {
             return
         }
 
+        // Initialize views
         initViews()
 
+        // Setup animation based on workout type
         setupAnimation(animationRes)
 
+        // Setup Map
         mapView = findViewById(R.id.mapView)
         setupMap()
 
+        // Setup Location Services
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
+        // Setup Timer Handler
         handler = Handler(Looper.getMainLooper())
 
+        // Setup click listeners
         setupClickListeners()
 
+        // Show summary initially
         showSummaryOrNoWorkouts()
 
+        // Request location permission
         checkLocationPermission()
     }
 
@@ -156,15 +175,19 @@ class OSMTrackingActivity : AppCompatActivity() {
             mapView.setBuiltInZoomControls(true)
             mapView.setMultiTouchControls(true)
 
+            // Set default zoom level
             mapView.controller.setZoom(17.0)
 
+            // Set default location (Yangon, Myanmar)
             val defaultLocation = GeoPoint(16.8409, 96.1735)
             mapView.controller.setCenter(defaultLocation)
 
+            // Initialize location overlay
             myLocationOverlay = MyLocationNewOverlay(GpsMyLocationProvider(this), mapView)
             myLocationOverlay.enableMyLocation()
             mapView.overlays.add(myLocationOverlay)
 
+            // Initialize route overlay
             routeOverlay = Polyline()
             routeOverlay.color = Color.parseColor("#FF6200EE")
             routeOverlay.width = 10.0f
@@ -287,23 +310,32 @@ class OSMTrackingActivity : AppCompatActivity() {
         Log.d(TAG, "Starting tracking for $workoutType")
 
         try {
+            // Reset stats
             resetStats()
 
+            // Start tracking
             isTracking = true
             isPaused = false
             startTime = System.currentTimeMillis()
 
+            // Update UI
             fabStartStop.text = "STOP"
             fabPause.visibility = View.VISIBLE
 
+            // Show animation
             animationView.visibility = View.VISIBLE
             animationView.playAnimation()
 
+            animationView.alpha = 0.7f
+
+            // Hide summary cards when tracking starts
             summaryCard.visibility = View.GONE
             noWorkoutsCard.visibility = View.GONE
 
+            // Start location updates
             startLocationUpdates()
 
+            // Start timer
             startTimer()
 
             Toast.makeText(this, "Started $workoutType tracking", Toast.LENGTH_SHORT).show()
@@ -346,16 +378,21 @@ class OSMTrackingActivity : AppCompatActivity() {
             isTracking = false
             isPaused = false
 
+            // Update UI
             fabStartStop.text = "START"
             fabPause.visibility = View.GONE
+
             animationView.visibility = View.GONE
             animationView.cancelAnimation()
 
+            // Stop updates
             stopLocationUpdates()
             handler.removeCallbacks(timerRunnable)
 
+            // Save workout to database
             saveWorkout()
 
+            // Show summary dialog
             showSummaryDialog()
         } catch (e: Exception) {
             Log.e(TAG, "Error stopping tracking: ${e.message}", e)
@@ -375,6 +412,7 @@ class OSMTrackingActivity : AppCompatActivity() {
             Log.e(TAG, "Error resetting map: ${e.message}", e)
         }
 
+        // Update UI
         tvTimer.text = "00:00:00"
         tvDistance.text = "0.00"
         tvSpeed.text = "0.0"
@@ -475,14 +513,17 @@ class OSMTrackingActivity : AppCompatActivity() {
         try {
             val geoPoint = GeoPoint(location.latitude, location.longitude)
 
+            // Add point to route
             routeOverlay.addPoint(geoPoint)
 
+            // Center map on current location
             if (locations.size == 1) {
                 mapView.controller.setCenter(geoPoint)
-                mapView.controller.setZoom(50.0)
+                mapView.controller.setZoom(18.0)
             }
 
-            mapView.invalidate()
+            mapView.postInvalidate()
+
             Log.d(TAG, "Map updated with location: $geoPoint")
         } catch (e: Exception) {
             Log.e(TAG, "Error updating map: ${e.message}", e)
@@ -578,6 +619,7 @@ class OSMTrackingActivity : AppCompatActivity() {
                     finish()
                 }
                 .setNeutralButton("Continue") { _, _ ->
+                    // Just close dialog, stay on screen
                     showSummaryOrNoWorkouts()
                 }
                 .show()
@@ -586,6 +628,7 @@ class OSMTrackingActivity : AppCompatActivity() {
         }
     }
 
+    // Location Permission Methods
     private fun checkLocationPermission() {
         if (!hasLocationPermission()) {
             ActivityCompat.requestPermissions(
@@ -643,10 +686,12 @@ class OSMTrackingActivity : AppCompatActivity() {
         }
     }
 
+    // Activity Lifecycle Methods
     override fun onResume() {
         super.onResume()
         try {
             mapView.onResume()
+            mapView.invalidate()
         } catch (e: Exception) {
             Log.e(TAG, "Error in onResume: ${e.message}", e)
         }
