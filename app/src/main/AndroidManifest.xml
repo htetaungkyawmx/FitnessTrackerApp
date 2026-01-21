@@ -72,6 +72,10 @@
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
 
         <activity
+            android:name=".ui.AchievementsActivity"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
+
+        <activity
             android:name=".ui.OSMTrackingActivity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
 

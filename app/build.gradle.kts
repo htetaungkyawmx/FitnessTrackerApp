@@ -127,4 +127,7 @@ dependencies {
         exclude(group = "com.j256.ormlite", module = "ormlite-android")
         exclude(group = "com.j256.ormlite", module = "ormlite-core")
     }
+    implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
+    implementation("com.google.android.gms:play-services-location:21.0.1")
+    implementation("com.google.android.material:material:1.11.0")
 }

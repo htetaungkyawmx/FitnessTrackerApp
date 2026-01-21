@@ -10,6 +10,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
+import androidx.cardview.widget.CardView
 import org.hak.fitnesstrackerapp.R
 import org.hak.fitnesstrackerapp.database.SQLiteHelper
 import org.hak.fitnesstrackerapp.network.RetrofitClient
@@ -31,10 +32,12 @@ class ProfileActivity : AppCompatActivity() {
     private lateinit var tvTotalWorkouts: TextView
     private lateinit var tvTotalDuration: TextView
     private lateinit var tvTotalCalories: TextView
+    private lateinit var tvAchievementCount: TextView
     private lateinit var btnSync: Button
     private lateinit var btnLogout: Button
     private lateinit var btnEdit: Button
     private lateinit var btnGoals: Button
+    private lateinit var cardAchievements: CardView
     private lateinit var dbHelper: SQLiteHelper
     private val TAG = "ProfileActivity"
     private var currentUserId: Int = 0
@@ -49,6 +52,7 @@ class ProfileActivity : AppCompatActivity() {
         setupClickListeners()
         loadUserProfile()
         loadStatistics()
+        loadAchievements()
     }
 
     private fun setupToolbar() {
@@ -80,10 +84,12 @@ class ProfileActivity : AppCompatActivity() {
         tvTotalWorkouts = findViewById(R.id.tvTotalWorkouts)
         tvTotalDuration = findViewById(R.id.tvTotalDuration)
         tvTotalCalories = findViewById(R.id.tvTotalCalories)
+        tvAchievementCount = findViewById(R.id.tvAchievementCount)
         btnSync = findViewById(R.id.btnSync)
         btnLogout = findViewById(R.id.btnLogout)
         btnEdit = findViewById(R.id.btnEdit)
         btnGoals = findViewById(R.id.btnGoals)
+        cardAchievements = findViewById(R.id.cardAchievements)
     }
 
     private fun setupClickListeners() {
@@ -101,6 +107,11 @@ class ProfileActivity : AppCompatActivity() {
 
         btnGoals.setOnClickListener {
             navigateToGoals()
+        }
+
+        // NEW: Achievements card click listener
+        cardAchievements.setOnClickListener {
+            navigateToAchievements()
         }
     }
 
@@ -212,6 +223,18 @@ class ProfileActivity : AppCompatActivity() {
         }
     }
 
+    private fun loadAchievements() {
+        try {
+            // Dummy achievement data - in real app, fetch from database
+            val unlockedCount = 3
+            val totalCount = 8
+            tvAchievementCount.text = "$unlockedCount/$totalCount unlocked"
+        } catch (e: Exception) {
+            Log.e(TAG, "Error loading achievements: ${e.message}")
+            tvAchievementCount.text = "0/0 unlocked"
+        }
+    }
+
     private fun syncWithServer() {
         if (currentUserId == 0) return
 
@@ -289,6 +312,17 @@ class ProfileActivity : AppCompatActivity() {
         })
     }
 
+    // NEW: Navigate to Achievements Activity
+    private fun navigateToAchievements() {
+        try {
+            val intent = Intent(this, AchievementsActivity::class.java)
+            startActivity(intent)
+        } catch (e: Exception) {
+            Toast.makeText(this, "Achievements screen not available yet", Toast.LENGTH_SHORT).show()
+            Log.e(TAG, "Error opening achievements: ${e.message}")
+        }
+    }
+
     private fun navigateToEditProfile() {
         Toast.makeText(this, "Edit Profile feature coming soon!", Toast.LENGTH_SHORT).show()
     }
@@ -344,6 +378,7 @@ class ProfileActivity : AppCompatActivity() {
         // Refresh data when returning to this activity
         loadUserProfile()
         loadStatistics()
+        loadAchievements()
     }
 
     override fun onDestroy() {

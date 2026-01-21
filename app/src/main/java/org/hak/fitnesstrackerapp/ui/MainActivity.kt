@@ -107,6 +107,12 @@ class MainActivity : AppCompatActivity() {
                     overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
                     true
                 }
+                R.id.nav_achievements -> {
+                    val intent = Intent(this, AchievementsActivity::class.java)
+                    startActivity(intent)
+                    overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+                    true
+                }
                 R.id.nav_profile -> {
                     val intent = Intent(this, ProfileActivity::class.java)
                     startActivity(intent)
