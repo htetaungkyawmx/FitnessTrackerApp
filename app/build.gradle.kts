@@ -40,7 +40,6 @@ android {
         viewBinding = true
     }
 
-    // Add packaging options to exclude duplicate files
     packaging {
         resources {
             excludes += listOf(
@@ -103,14 +102,12 @@ dependencies {
     implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
     // Shimmer Effect
     implementation("com.facebook.shimmer:shimmer:0.5.0")
-
-    // Google Maps and Location (already included above, keeping for clarity)
-    implementation("androidx.core:core-ktx:1.12.0") // Using the same version as above
+    implementation("androidx.core:core-ktx:1.12.0")
 
     // RecyclerView
     implementation("androidx.recyclerview:recyclerview:1.3.0")
 
-    // OSMdroid - IMPORTANT: Exclude transitive ORMLite dependencies
+    // OSMdroid
     implementation("org.osmdroid:osmdroid-android:6.1.18") {
         exclude(group = "com.j256.ormlite", module = "ormlite-android")
         exclude(group = "com.j256.ormlite", module = "ormlite-core")
