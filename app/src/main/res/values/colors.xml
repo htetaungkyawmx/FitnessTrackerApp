@@ -111,4 +111,8 @@
     <!-- Card colors -->
     <color name="card_background">#FFFFFF</color>
     <color name="card_shadow">#26000000</color>
+
+    <color name="transparent">#00000000</color>
+    <color name="gradient_dark">#2C3E50</color>
+    <color name="gradient_darker">#34495E</color>
 </resources>

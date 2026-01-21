@@ -301,9 +301,7 @@ class GPSTrackingActivity : AppCompatActivity(), OnMapReadyCallback {
         val tvTotalCalories = dialogView.findViewById<TextView>(R.id.tvTotalCalories)
 
         recyclerView.layoutManager = LinearLayoutManager(this)
-        recyclerView.adapter = WorkoutHistoryAdapter(workouts.take(10)) { workout ->
-            Toast.makeText(this, "${workout.date}: ${workout.duration} min", Toast.LENGTH_SHORT).show()
-        }
+        recyclerView.adapter = WorkoutHistoryAdapter(workouts.take(10))
 
         val totalCalories = workouts.sumOf { it.calories }
         tvTotalWorkouts.text = "${workouts.size} workouts"

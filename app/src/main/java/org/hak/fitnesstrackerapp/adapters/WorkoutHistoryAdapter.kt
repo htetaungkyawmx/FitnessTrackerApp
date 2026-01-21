@@ -10,7 +10,7 @@ import org.hak.fitnesstrackerapp.model.Workout
 
 class WorkoutHistoryAdapter(
     private val workouts: List<Workout>,
-    private val onItemClick: (Workout) -> Unit
+    private val onItemClick: (Workout) -> Unit = {}
 ) : RecyclerView.Adapter<WorkoutHistoryAdapter.ViewHolder>() {
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {

@@ -50,12 +50,17 @@ class OSMTrackingActivity : AppCompatActivity() {
     private lateinit var tvDistance: TextView
     private lateinit var tvSpeed: TextView
     private lateinit var tvCalories: TextView
+    private lateinit var tvPace: TextView
+    private lateinit var tvMaxSpeed: TextView
+    private lateinit var tvAltitude: TextView
     private lateinit var fabStartStop: Button
     private lateinit var fabPause: Button
     private lateinit var animationView: LottieAnimationView
     private lateinit var summaryCard: androidx.cardview.widget.CardView
     private lateinit var tvWorkoutCount: TextView
+    private lateinit var tvTotalDistance: TextView
     private lateinit var tvTotalDuration: TextView
+    private lateinit var tvTotalCalories: TextView
     private lateinit var noWorkoutsCard: androidx.cardview.widget.CardView
 
     // GPS/Location
@@ -69,27 +74,32 @@ class OSMTrackingActivity : AppCompatActivity() {
     private var startTime: Long = 0
     private var pauseTime: Long = 0
     private var totalPauseTime: Long = 0
-    private val locations = mutableListOf<Location>()
     private var currentSpeed = 0.0f
+    private var maxSpeed = 0.0f
+    private var totalCalories = 0
+    private var locations = mutableListOf<Location>()
+    private var speedHistory = mutableListOf<Float>()
 
-    // Handler for timer
+    // Timers
     private lateinit var handler: Handler
     private lateinit var timerRunnable: Runnable
+    private lateinit var updateRunnable: Runnable
+    private val updateInterval = 10000L // 10 seconds for data update
 
     // Database
     private lateinit var dbHelper: SQLiteHelper
     private var currentUserId: Int = 0
     private var workoutType: String = ""
 
-    // Map overlay
+    // Map
     private lateinit var myLocationOverlay: MyLocationNewOverlay
     private lateinit var routeOverlay: Polyline
 
     companion object {
         private const val TAG = "OSMTrackingActivity"
         private const val LOCATION_PERMISSION_REQUEST_CODE = 1001
-        private const val UPDATE_INTERVAL = 1000L // 1 second
-        private const val FASTEST_INTERVAL = 500L // 0.5 second
+        private const val LOCATION_UPDATE_INTERVAL = 1000L // 1 second for location
+        private const val LOCATION_FASTEST_INTERVAL = 500L
     }
 
     @SuppressLint("MissingInflatedId")
@@ -100,18 +110,18 @@ class OSMTrackingActivity : AppCompatActivity() {
         // Keep screen on
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
-        // Get workout type from intent
+        // Get workout type
         workoutType = intent.getStringExtra("WORKOUT_TYPE") ?: "Running"
         val animationRes = intent.getIntExtra("ANIMATION_RES", -1)
 
-        Log.d(TAG, "Starting OSMTrackingActivity for workout type: $workoutType")
+        Log.d(TAG, "Starting tracking for: $workoutType")
 
         // Setup toolbar
         setSupportActionBar(findViewById(R.id.toolbar))
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.title = "$workoutType Tracking"
 
-        // Initialize OSM configuration
+        // Initialize OSM
         Configuration.getInstance().load(this, getSharedPreferences("osm", MODE_PRIVATE))
         Configuration.getInstance().userAgentValue = packageName
 
@@ -131,26 +141,26 @@ class OSMTrackingActivity : AppCompatActivity() {
         // Initialize views
         initViews()
 
-        // Setup animation based on workout type
+        // Setup animation
         setupAnimation(animationRes)
 
         // Setup Map
         mapView = findViewById(R.id.mapView)
         setupMap()
 
-        // Setup Location Services
+        // Setup Location
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
-        // Setup Timer Handler
+        // Setup Handlers
         handler = Handler(Looper.getMainLooper())
 
         // Setup click listeners
         setupClickListeners()
 
-        // Show summary initially
+        // Show summary
         showSummaryOrNoWorkouts()
 
-        // Request location permission
+        // Check permission
         checkLocationPermission()
     }
 
@@ -159,12 +169,17 @@ class OSMTrackingActivity : AppCompatActivity() {
         tvDistance = findViewById(R.id.tvDistance)
         tvSpeed = findViewById(R.id.tvSpeed)
         tvCalories = findViewById(R.id.tvCalories)
+        tvPace = findViewById(R.id.tvPace)
+        tvMaxSpeed = findViewById(R.id.tvMaxSpeed)
+        tvAltitude = findViewById(R.id.tvAltitude)
         fabStartStop = findViewById(R.id.fabStartStop)
         fabPause = findViewById(R.id.fabPause)
         animationView = findViewById(R.id.animationView)
         summaryCard = findViewById(R.id.summaryCard)
         tvWorkoutCount = findViewById(R.id.tvWorkoutCount)
+        tvTotalDistance = findViewById(R.id.tvTotalDistance)
         tvTotalDuration = findViewById(R.id.tvTotalDuration)
+        tvTotalCalories = findViewById(R.id.tvTotalCalories)
         noWorkoutsCard = findViewById(R.id.noWorkoutsCard)
     }
 
@@ -174,36 +189,31 @@ class OSMTrackingActivity : AppCompatActivity() {
             mapView.setMultiTouchControls(true)
             mapView.setBuiltInZoomControls(true)
             mapView.setMultiTouchControls(true)
-
-            // Set default zoom level
             mapView.controller.setZoom(17.0)
 
-            // Set default location (Yangon, Myanmar)
+            // Default location (Yangon)
             val defaultLocation = GeoPoint(16.8409, 96.1735)
             mapView.controller.setCenter(defaultLocation)
 
-            // Initialize location overlay
+            // Location overlay
             myLocationOverlay = MyLocationNewOverlay(GpsMyLocationProvider(this), mapView)
             myLocationOverlay.enableMyLocation()
             mapView.overlays.add(myLocationOverlay)
 
-            // Initialize route overlay
+            // Route overlay
             routeOverlay = Polyline()
-            routeOverlay.color = Color.parseColor("#FF6200EE")
-            routeOverlay.width = 10.0f
+            routeOverlay.color = Color.parseColor("#FF3B30")
+            routeOverlay.width = 8.0f
             mapView.overlays.add(routeOverlay)
 
-            Log.d(TAG, "Map setup completed successfully")
+            Log.d(TAG, "Map setup completed")
         } catch (e: Exception) {
-            Log.e(TAG, "Error setting up map: ${e.message}", e)
-            Toast.makeText(this, "Error setting up map: ${e.message}", Toast.LENGTH_SHORT).show()
+            Log.e(TAG, "Map setup error: ${e.message}", e)
         }
     }
 
     private fun showSummaryOrNoWorkouts() {
         val recentWorkouts = dbHelper.getRecentWorkoutsByType(currentUserId, workoutType, 30)
-
-        Log.d(TAG, "Found ${recentWorkouts.size} recent workouts for $workoutType")
 
         if (recentWorkouts.isNotEmpty()) {
             showRecentWorkoutsSummary(recentWorkouts)
@@ -219,28 +229,29 @@ class OSMTrackingActivity : AppCompatActivity() {
         tvWorkoutCount.text = "${workouts.size}"
 
         val totalDuration = workouts.sumOf { it.duration }
+        val totalDistance = workouts.sumOf { it.distance ?: 0.0 }
+        val totalCalories = workouts.sumOf { it.calories }
+
         tvTotalDuration.text = "${totalDuration} min"
+        tvTotalDistance.text = String.format("%.1f km", totalDistance)
+        tvTotalCalories.text = "$totalCalories cal"
     }
 
     private fun setupAnimation(animationRes: Int) {
         val defaultAnimation = when (workoutType.lowercase()) {
             "running" -> R.raw.running_animation
             "cycling" -> R.raw.cycling_animation
-            else -> -1
+            "swimming" -> R.raw.swimming_animation
+            else -> R.raw.running_animation
         }
 
         val finalAnimationRes = if (animationRes != -1) animationRes else defaultAnimation
 
-        if (finalAnimationRes != -1) {
-            try {
-                animationView.setAnimation(finalAnimationRes)
-                animationView.visibility = View.GONE
-                Log.d(TAG, "Animation loaded for $workoutType")
-            } catch (e: Exception) {
-                Log.e(TAG, "Error loading animation: ${e.message}", e)
-                animationView.visibility = View.GONE
-            }
-        } else {
+        try {
+            animationView.setAnimation(finalAnimationRes)
+            animationView.visibility = View.GONE
+        } catch (e: Exception) {
+            Log.e(TAG, "Animation error: ${e.message}", e)
             animationView.visibility = View.GONE
         }
     }
@@ -282,9 +293,7 @@ class OSMTrackingActivity : AppCompatActivity() {
         val tvTotalCalories = dialogView.findViewById<TextView>(R.id.tvTotalCalories)
 
         recyclerView.layoutManager = LinearLayoutManager(this)
-        recyclerView.adapter = WorkoutHistoryAdapter(workouts.take(10)) { workout ->
-            Toast.makeText(this, "${workout.date}: ${workout.duration} min", Toast.LENGTH_SHORT).show()
-        }
+        recyclerView.adapter = WorkoutHistoryAdapter(workouts.take(10))
 
         val totalCalories = workouts.sumOf { it.calories }
         tvTotalWorkouts.text = "${workouts.size} workouts"
@@ -307,8 +316,6 @@ class OSMTrackingActivity : AppCompatActivity() {
             return
         }
 
-        Log.d(TAG, "Starting tracking for $workoutType")
-
         try {
             // Reset stats
             resetStats()
@@ -326,22 +333,20 @@ class OSMTrackingActivity : AppCompatActivity() {
             animationView.visibility = View.VISIBLE
             animationView.playAnimation()
 
-            animationView.alpha = 0.7f
-
-            // Hide summary cards when tracking starts
+            // Hide cards
             summaryCard.visibility = View.GONE
             noWorkoutsCard.visibility = View.GONE
 
             // Start location updates
             startLocationUpdates()
 
-            // Start timer
+            // Start timers
             startTimer()
+            startDataUpdates()
 
             Toast.makeText(this, "Started $workoutType tracking", Toast.LENGTH_SHORT).show()
         } catch (e: Exception) {
-            Log.e(TAG, "Error starting tracking: ${e.message}", e)
-            Toast.makeText(this, "Error starting tracking: ${e.message}", Toast.LENGTH_SHORT).show()
+            Log.e(TAG, "Start tracking error: ${e.message}", e)
         }
     }
 
@@ -352,10 +357,11 @@ class OSMTrackingActivity : AppCompatActivity() {
             fabPause.text = "▶"
             animationView.pauseAnimation()
             stopLocationUpdates()
+            handler.removeCallbacks(updateRunnable)
 
-            Toast.makeText(this, "Tracking paused", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Paused", Toast.LENGTH_SHORT).show()
         } catch (e: Exception) {
-            Log.e(TAG, "Error pausing tracking: ${e.message}", e)
+            Log.e(TAG, "Pause error: ${e.message}", e)
         }
     }
 
@@ -366,10 +372,11 @@ class OSMTrackingActivity : AppCompatActivity() {
             fabPause.text = "⏸"
             animationView.resumeAnimation()
             startLocationUpdates()
+            startDataUpdates()
 
-            Toast.makeText(this, "Tracking resumed", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Resumed", Toast.LENGTH_SHORT).show()
         } catch (e: Exception) {
-            Log.e(TAG, "Error resuming tracking: ${e.message}", e)
+            Log.e(TAG, "Resume error: ${e.message}", e)
         }
     }
 
@@ -388,43 +395,50 @@ class OSMTrackingActivity : AppCompatActivity() {
             // Stop updates
             stopLocationUpdates()
             handler.removeCallbacks(timerRunnable)
+            handler.removeCallbacks(updateRunnable)
 
-            // Save workout to database
+            // Save workout
             saveWorkout()
 
-            // Show summary dialog
+            // Show summary
             showSummaryDialog()
         } catch (e: Exception) {
-            Log.e(TAG, "Error stopping tracking: ${e.message}", e)
+            Log.e(TAG, "Stop error: ${e.message}", e)
         }
     }
 
     private fun resetStats() {
         totalDistance = 0.0f
         totalPauseTime = 0
+        totalCalories = 0
         currentSpeed = 0.0f
+        maxSpeed = 0.0f
         locations.clear()
+        speedHistory.clear()
 
         try {
             routeOverlay.points.clear()
             mapView.invalidate()
         } catch (e: Exception) {
-            Log.e(TAG, "Error resetting map: ${e.message}", e)
+            Log.e(TAG, "Reset map error: ${e.message}", e)
         }
 
-        // Update UI
+        // Reset UI
         tvTimer.text = "00:00:00"
         tvDistance.text = "0.00"
         tvSpeed.text = "0.0"
         tvCalories.text = "0"
+        tvPace.text = "0:00"
+        tvMaxSpeed.text = "0.0"
+        tvAltitude.text = "0 m"
     }
 
     @SuppressLint("MissingPermission")
     private fun startLocationUpdates() {
         try {
             val locationRequest = LocationRequest.create().apply {
-                interval = UPDATE_INTERVAL
-                fastestInterval = FASTEST_INTERVAL
+                interval = LOCATION_UPDATE_INTERVAL
+                fastestInterval = LOCATION_FASTEST_INTERVAL
                 priority = LocationRequest.PRIORITY_HIGH_ACCURACY
             }
 
@@ -441,10 +455,8 @@ class OSMTrackingActivity : AppCompatActivity() {
                 locationCallback,
                 Looper.getMainLooper()
             )
-
-            Log.d(TAG, "Location updates started")
         } catch (e: Exception) {
-            Log.e(TAG, "Error starting location updates: ${e.message}", e)
+            Log.e(TAG, "Location updates error: ${e.message}", e)
         }
     }
 
@@ -452,10 +464,9 @@ class OSMTrackingActivity : AppCompatActivity() {
         try {
             if (::locationCallback.isInitialized) {
                 fusedLocationClient.removeLocationUpdates(locationCallback)
-                Log.d(TAG, "Location updates stopped")
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Error stopping location updates: ${e.message}", e)
+            Log.e(TAG, "Stop location error: ${e.message}", e)
         }
     }
 
@@ -468,65 +479,65 @@ class OSMTrackingActivity : AppCompatActivity() {
                 val distance = location.distanceTo(previousLocation)
                 totalDistance += distance
 
-                currentSpeed = (location.speed * 3.6f)
+                currentSpeed = location.speed * 3.6f // Convert m/s to km/h
+                speedHistory.add(currentSpeed)
 
-                updateStats()
+                // Update max speed
+                if (currentSpeed > maxSpeed) {
+                    maxSpeed = currentSpeed
+                }
 
+                updateRealTimeStats(location)
                 updateMap(location)
             } else {
+                // First location
                 updateMap(location)
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Error updating location: ${e.message}", e)
+            Log.e(TAG, "Update location error: ${e.message}", e)
         }
     }
 
-    private fun updateStats() {
+    private fun updateRealTimeStats(location: Location) {
         try {
             val distanceKm = totalDistance / 1000
             tvDistance.text = String.format("%.2f", distanceKm)
 
             tvSpeed.text = String.format("%.1f", currentSpeed)
+            tvMaxSpeed.text = String.format("%.1f", maxSpeed)
 
-            val calories = calculateCalories(distanceKm)
-            tvCalories.text = calories.toString()
+            // Update calories every 10 seconds (in startDataUpdates)
+
+            // Calculate pace (min/km)
+            val elapsedTime = System.currentTimeMillis() - startTime - totalPauseTime
+            if (distanceKm > 0.01f && elapsedTime > 0) {
+                val paceSeconds = (elapsedTime / 1000) / distanceKm
+                val minutes = (paceSeconds / 60).toInt()
+                val seconds = (paceSeconds % 60).toInt()
+                tvPace.text = String.format("%d:%02d", minutes, seconds)
+            }
+
+            // Altitude
+            val altitude = location.altitude
+            tvAltitude.text = String.format("%.0f m", altitude)
         } catch (e: Exception) {
-            Log.e(TAG, "Error updating stats: ${e.message}", e)
+            Log.e(TAG, "Update stats error: ${e.message}", e)
         }
-    }
-
-    private fun calculateCalories(distanceKm: Float): Int {
-        val caloriesPerKm = when (workoutType.lowercase()) {
-            "running" -> 60
-            "cycling" -> 30
-            else -> 50
-        }
-
-        val duration = if (isTracking && !isPaused) {
-            ((System.currentTimeMillis() - startTime - totalPauseTime) / 1000).toFloat() / 3600
-        } else 0.0f
-
-        return (distanceKm * caloriesPerKm).roundToInt()
     }
 
     private fun updateMap(location: Location) {
         try {
             val geoPoint = GeoPoint(location.latitude, location.longitude)
-
-            // Add point to route
             routeOverlay.addPoint(geoPoint)
 
-            // Center map on current location
             if (locations.size == 1) {
                 mapView.controller.setCenter(geoPoint)
                 mapView.controller.setZoom(18.0)
             }
 
             mapView.postInvalidate()
-
-            Log.d(TAG, "Map updated with location: $geoPoint")
         } catch (e: Exception) {
-            Log.e(TAG, "Error updating map: ${e.message}", e)
+            Log.e(TAG, "Update map error: ${e.message}", e)
         }
     }
 
@@ -543,6 +554,51 @@ class OSMTrackingActivity : AppCompatActivity() {
         handler.post(timerRunnable)
     }
 
+    private fun startDataUpdates() {
+        updateRunnable = object : Runnable {
+            override fun run() {
+                if (isTracking && !isPaused) {
+                    updateCaloriesAndStats()
+                    handler.postDelayed(this, updateInterval) // Update every 10 seconds
+                }
+            }
+        }
+        handler.post(updateRunnable)
+    }
+
+    private fun updateCaloriesAndStats() {
+        try {
+            val elapsedTime = System.currentTimeMillis() - startTime - totalPauseTime
+            val hours = elapsedTime.toFloat() / (1000 * 60 * 60)
+            val distanceKm = totalDistance / 1000
+
+            // Calculate calories based on MET (Metabolic Equivalent of Task)
+            val caloriesPerHour = when (workoutType.lowercase()) {
+                "running" -> 600 * hours // 600 cal/hour for running
+                "cycling" -> 400 * hours // 400 cal/hour for cycling
+                "walking" -> 300 * hours // 300 cal/hour for walking
+                else -> 500 * hours // Default
+            }
+
+            // Add distance-based calories
+            val distanceCalories = when (workoutType.lowercase()) {
+                "running" -> distanceKm * 60 // 60 cal/km
+                "cycling" -> distanceKm * 30 // 30 cal/km
+                "walking" -> distanceKm * 50 // 50 cal/km
+                else -> distanceKm * 40 // Default
+            }
+
+            totalCalories = (caloriesPerHour + distanceCalories).roundToInt()
+            tvCalories.text = totalCalories.toString()
+
+            // Log the update
+            Log.d(TAG, "Data update - Distance: $distanceKm km, Calories: $totalCalories, Time: ${elapsedTime/1000}s")
+
+        } catch (e: Exception) {
+            Log.e(TAG, "Update calories error: ${e.message}", e)
+        }
+    }
+
     private fun updateTimer(millis: Long) {
         try {
             val seconds = (millis / 1000) % 60
@@ -551,7 +607,7 @@ class OSMTrackingActivity : AppCompatActivity() {
 
             tvTimer.text = String.format("%02d:%02d:%02d", hours, minutes, seconds)
         } catch (e: Exception) {
-            Log.e(TAG, "Error updating timer: ${e.message}", e)
+            Log.e(TAG, "Update timer error: ${e.message}", e)
         }
     }
 
@@ -561,20 +617,20 @@ class OSMTrackingActivity : AppCompatActivity() {
         try {
             val duration = ((System.currentTimeMillis() - startTime - totalPauseTime) / 1000).toInt()
             val distanceKm = totalDistance / 1000
-            val calories = calculateCalories(distanceKm)
             val date = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
 
+            // Calculate average speed
             val avgSpeed = if (duration > 0) {
-                (distanceKm / (duration / 3600.0)).toFloat()
-            } else 0.0f
+                (distanceKm / (duration / 3600.0))
+            } else 0.0
 
             val workout = Workout(
                 userId = currentUserId,
                 type = workoutType,
                 duration = duration,
                 distance = distanceKm.toDouble(),
-                calories = calories,
-                notes = "GPS Tracked: Avg Speed ${String.format("%.1f", avgSpeed)} km/h",
+                calories = totalCalories,
+                notes = "GPS Tracked - Distance: ${String.format("%.2f", distanceKm)} km, Time: ${duration/60} min",
                 date = date,
                 timestamp = System.currentTimeMillis(),
                 synced = false
@@ -582,12 +638,11 @@ class OSMTrackingActivity : AppCompatActivity() {
 
             val result = dbHelper.insertWorkout(workout)
             if (result > 0) {
-                Toast.makeText(this, "$workoutType saved successfully!", Toast.LENGTH_SHORT).show()
-                Log.d(TAG, "Workout saved: $workoutType, distance: $distanceKm km, duration: $duration sec")
+                Log.d(TAG, "Workout saved: $workout")
+                showSummaryOrNoWorkouts()
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Error saving workout: ${e.message}", e)
-            Toast.makeText(this, "Error saving workout", Toast.LENGTH_SHORT).show()
+            Log.e(TAG, "Save workout error: ${e.message}", e)
         }
     }
 
@@ -595,40 +650,39 @@ class OSMTrackingActivity : AppCompatActivity() {
         try {
             val duration = ((System.currentTimeMillis() - startTime - totalPauseTime) / 1000).toInt()
             val distanceKm = totalDistance / 1000
-            val calories = calculateCalories(distanceKm)
+            val avgSpeed = if (duration > 0) {
+                String.format("%.1f", (distanceKm / (duration / 3600.0)))
+            } else "0.0"
 
             val message = """
-                $workoutType Completed!
+                🏆 Workout Completed!
                 
-                Duration: ${tvTimer.text}
+                Duration: ${duration / 60} min ${duration % 60} sec
                 Distance: ${String.format("%.2f", distanceKm)} km
-                Avg Speed: ${tvSpeed.text} km/h
-                Calories: $calories cal
+                Avg Speed: $avgSpeed km/h
+                Max Speed: ${String.format("%.1f", maxSpeed)} km/h
+                Calories: $totalCalories cal
                 
-                Route saved to history.
+                Great job! Keep it up!
             """.trimIndent()
 
             AlertDialog.Builder(this)
                 .setTitle("Workout Summary")
                 .setMessage(message)
-                .setPositiveButton("Save & Exit") { _, _ ->
+                .setPositiveButton("Save & View") { _, _ ->
                     saveWorkout()
-                    finish()
-                }
-                .setNegativeButton("Discard") { _, _ ->
-                    finish()
-                }
-                .setNeutralButton("Continue") { _, _ ->
-                    // Just close dialog, stay on screen
                     showSummaryOrNoWorkouts()
+                }
+                .setNegativeButton("Done") { _, _ ->
+                    finish()
                 }
                 .show()
         } catch (e: Exception) {
-            Log.e(TAG, "Error showing summary dialog: ${e.message}", e)
+            Log.e(TAG, "Summary dialog error: ${e.message}", e)
         }
     }
 
-    // Location Permission Methods
+    // Permission methods
     private fun checkLocationPermission() {
         if (!hasLocationPermission()) {
             ActivityCompat.requestPermissions(
@@ -659,7 +713,7 @@ class OSMTrackingActivity : AppCompatActivity() {
             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 Toast.makeText(this, "Location permission granted", Toast.LENGTH_SHORT).show()
             } else {
-                Toast.makeText(this, "Location permission required for GPS tracking", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Location permission required", Toast.LENGTH_SHORT).show()
                 finish()
             }
         }
@@ -673,27 +727,25 @@ class OSMTrackingActivity : AppCompatActivity() {
     override fun onBackPressed() {
         if (isTracking) {
             AlertDialog.Builder(this)
-                .setTitle("Stop Tracking")
+                .setTitle("Stop Tracking?")
                 .setMessage("Are you sure you want to stop tracking and exit?")
                 .setPositiveButton("Stop & Exit") { _, _ ->
                     stopTracking()
                     super.onBackPressed()
                 }
-                .setNegativeButton("Continue Tracking", null)
+                .setNegativeButton("Continue", null)
                 .show()
         } else {
             super.onBackPressed()
         }
     }
 
-    // Activity Lifecycle Methods
     override fun onResume() {
         super.onResume()
         try {
             mapView.onResume()
-            mapView.invalidate()
         } catch (e: Exception) {
-            Log.e(TAG, "Error in onResume: ${e.message}", e)
+            Log.e(TAG, "Resume error: ${e.message}", e)
         }
     }
 
@@ -705,7 +757,7 @@ class OSMTrackingActivity : AppCompatActivity() {
                 pauseTracking()
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Error in onPause: ${e.message}", e)
+            Log.e(TAG, "Pause error: ${e.message}", e)
         }
     }
 
@@ -713,13 +765,12 @@ class OSMTrackingActivity : AppCompatActivity() {
         super.onDestroy()
         try {
             mapView.onDetach()
-            if (::handler.isInitialized) {
-                handler.removeCallbacks(timerRunnable)
-            }
+            handler.removeCallbacks(timerRunnable)
+            handler.removeCallbacks(updateRunnable)
             stopLocationUpdates()
             dbHelper.closeDB()
         } catch (e: Exception) {
-            Log.e(TAG, "Error in onDestroy: ${e.message}", e)
+            Log.e(TAG, "Destroy error: ${e.message}", e)
         }
     }
 }
