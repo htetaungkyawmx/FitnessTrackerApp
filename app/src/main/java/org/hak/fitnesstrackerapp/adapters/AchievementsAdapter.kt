@@ -1,4 +1,4 @@
-package org.hak.fitnesstrackerapp.adapter
+package org.hak.fitnesstrackerapp.adapters
 
 import android.graphics.Color
 import android.view.LayoutInflater

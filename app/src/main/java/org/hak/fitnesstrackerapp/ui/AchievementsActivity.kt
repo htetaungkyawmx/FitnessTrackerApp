@@ -20,7 +20,7 @@ import com.github.mikephil.charting.data.PieDataSet
 import com.github.mikephil.charting.data.PieEntry
 import com.github.mikephil.charting.formatter.ValueFormatter
 import org.hak.fitnesstrackerapp.R
-import org.hak.fitnesstrackerapp.adapter.AchievementsAdapter
+import org.hak.fitnesstrackerapp.adapters.AchievementsAdapter
 import org.hak.fitnesstrackerapp.model.Achievement
 
 class AchievementsActivity : AppCompatActivity() {
